@@ -1,0 +1,6 @@
+transformers>=4.0.0
+sentencepiece
+nltk
+torch
+protobuf
+nlp==0.2.0
