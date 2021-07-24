@@ -1,4 +1,6 @@
 transformers>=4.0.0
+sentence-transformers
+scikit-learn
 sentencepiece
 nltk
 torch

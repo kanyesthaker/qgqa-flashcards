@@ -93,8 +93,10 @@ class E2EQGPipeline:
         )
         return inputs
 
-def pipeline(use_cuda=True):
+def pipeline(use_cuda=True, model=None):
     model = "valhalla/t5-small-e2e-qg"
+    if model == "BART":
+        model = "valhalla/bart-large-finetuned-squadv1"
     tokenizer = AutoTokenizer.from_pretrained(model)
     model=AutoModelForSeq2SeqLM.from_pretrained(model)
     return E2EQGPipeline(model=model, tokenizer=tokenizer, use_cuda=use_cuda)

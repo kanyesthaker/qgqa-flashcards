@@ -7,11 +7,19 @@ def gen_qaqg(context):
 		with open(context, "r") as f:
 			return gen_qaqg(f.read())
 
-	qg = qg_pipeline()
+	qg1 = qg_pipeline()
+	qg2 = qg_pipeline(model="BART")
 	qa = qa_pipeline('question-answering', model="distilbert-base-cased-distilled-squad")
 
-	questions = qg(context)
-	answers = [qa(question=question, context=context)["answer"] for question in questions]
+	now=time.time()
+	questions1 = qg1(context)
+	print("HERE HERE HERE!!!\n\n")
+	print(f"\nT5 inference: {time.time()-now}s\n")
+	now=time.time()
+	questions2 = qg2(context)
+	print(f"\nBART inference: {time.time()-now}s\n")
+
+	answers = [qa(question=question, context=context)["answer"] for question in questions1]
 
 	return list(zip(questions, answers))
 
