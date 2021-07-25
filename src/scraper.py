@@ -1,11 +1,11 @@
 import re 
-import urllib.request 
+import requests
 from bs4 import BeautifulSoup
 from bs4.element import Comment
 
 class Scraper:
     def __init__(self):
-        pass
+        self.headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36'}
 
     def tag_visible(self, element):
         if element.parent.name in ['style', 'script', 'head', 'title', 'meta', '[document]']:
@@ -15,7 +15,7 @@ class Scraper:
         return True
 
     def get_text(self, url):
-        html = urllib.request.urlopen(url).read()
+        html = requests.get(url, headers=self.headers).text
         soup = BeautifulSoup(html, "html.parser") 
         # data = soup.findAll(text=True) 
         for script in soup.find_all('script'):
