@@ -4,5 +4,7 @@ scikit-learn
 sentencepiece
 nltk
 torch
+bs4
+requests
 protobuf
 nlp==0.2.0

@@ -17,21 +17,21 @@ class Scraper:
     def get_text(self, url):
         html = requests.get(url, headers=self.headers).text
         soup = BeautifulSoup(html, "html.parser")
-        for script in soup.find_all('script'):
-            script.decompose()
-        data=soup.get_text().split('\n')
-        cleaned=[s for s in data if s]
-        ret = ". ".join(cleaned)
+        data = soup.find_all('p')
+        pat = re.compile(r'<.*?>')
+        ret = [re.sub(pat, '', str(d)) for d in data]
+        ret = ". ".join(ret)
         ret = re.sub(r'\{(.*?)\}', '', ret)
         pattern = re.compile(r'([A-Z][^\.!?]*[^ ][\.!?])', re.M)
         sentences = pattern.findall(ret)
-        ret = "\n".join(sentences)
+        ret = " ".join(sentences)
+        ret = re.sub(r'([A-Z][^ \.!?]+[\.!?])', '', ret)
         print(ret)
         return ret
 
 def __main__():
-    url = "https://www.ibm.com/cloud/learn/natural-language-processing"
+    url = "https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html#deriving-the-simplest-policy-gradient"
     scraper = Scraper()
-    scraper.get_text(url)
+    print(scraper.get_text(url))
 
 # __main__()

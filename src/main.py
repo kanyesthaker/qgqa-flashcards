@@ -19,7 +19,10 @@ def gen_qaqg(context):
 	return list(zip(questions1, answers))
 
 def init_pipelines():
-	return qg_pipeline(), qa_pipeline('question-answering', model="distilbert-base-cased-distilled-squad")
+	model_name = "deepset/roberta-base-squad2"
+
+	# return qg_pipeline(), qa_pipeline('question-answering', model="lysandre/bidaf-elmo-model-2020.03.19")
+	return qg_pipeline(), qa_pipeline('question-answering', model=model_name, tokenizer=model_name)
 
 def gen_qg(context):
 	if context.endswith(".txt"):
@@ -38,7 +41,8 @@ def interactive():
 	scraper = Scraper()
 	qg, qa = init_pipelines()
 
-	while True:
+	now = time.time()
+	while True and (time.time()-now) < 60:
 		url  = input("Enter a URL: ")
 		context = scraper.get_text(url)
 		context = context.split()
@@ -50,7 +54,7 @@ def interactive():
 			answers = [qa(question=question, context=context)["answer"] for question in questions]
 
 			for gen_q,gen_ans in zip(questions, answers):
-				if len(gen_q.split()) not in range(7, 8): continue #10: continue
+				if len(gen_q.split()) not in range(7, 10): continue #10: continue
 				# if len(gen_q.split()) <= 4: continue
 				if gen_q.split()[0].lower() == "when": continue
 				if gen_q.split()[0].lower() == "who": continue
