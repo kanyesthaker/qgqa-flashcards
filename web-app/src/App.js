@@ -2,6 +2,7 @@ import logo from "./logo.svg";
 import "./App.css";
 import "./App.css";
 import Form from "./components/form.js";
+import FlashcardContainer from "./flashcard-container";
 
 // import Background from "./images/space.png";
 import styled, { css } from "styled-components";
@@ -17,6 +18,7 @@ function App() {
       <header className="App-header">
         <Form></Form>
       </header>
+      <FlashcardContainer></FlashcardContainer>
       {/* </div> */}
     </div>
   );
