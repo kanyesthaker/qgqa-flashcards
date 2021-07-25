@@ -1,0 +1,39 @@
+.Flashcard-container {
+  height: 450px;
+  width: 300px;
+  border-radius: 6px;
+  /* border-style: solid;
+  border-width: 1px;
+  border-color: grey; */
+
+  text-align: left;
+  box-shadow: 0 7px 50px rgb(46 10 99 / 5%), 0 1px 1px 0.6px rgb(46 10 99 / 10%);
+
+  font-family: Tahoma;
+  background-color: white;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  font-family: "DM Sans", sans-serif;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.Flashcard-question {
+  font-size: 18px;
+  padding: 6%;
+  /* width: 50%; */
+}
+
+.Flashcard-answer-container {
+  border-top: 1px solid #f5f5f5;
+  /* border-style: solid; */
+  background-color: #fcfaff;
+  padding: 6%;
+  height: 100%;
+}
+
+.Flashcard-answer {
+}
