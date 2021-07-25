@@ -16,17 +16,22 @@ class Scraper:
 
     def get_text(self, url):
         html = requests.get(url, headers=self.headers).text
-        soup = BeautifulSoup(html, "html.parser") 
-        # data = soup.findAll(text=True) 
+        soup = BeautifulSoup(html, "html.parser")
         for script in soup.find_all('script'):
             script.decompose()
         data=soup.get_text().split('\n')
         cleaned=[s for s in data if s]
-        return ". ".join(cleaned)
+        ret = ". ".join(cleaned)
+        ret = re.sub(r'\{(.*?)\}', '', ret)
+        pattern = re.compile(r'([A-Z][^\.!?]*[^ ][\.!?])', re.M)
+        sentences = pattern.findall(ret)
+        ret = "\n".join(sentences)
+        print(ret)
+        return ret
 
 def __main__():
     url = "https://www.ibm.com/cloud/learn/natural-language-processing"
     scraper = Scraper()
     scraper.get_text(url)
 
-__main__()
+# __main__()

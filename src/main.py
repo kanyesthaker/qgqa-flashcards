@@ -50,8 +50,13 @@ def interactive():
 			answers = [qa(question=question, context=context)["answer"] for question in questions]
 
 			for gen_q,gen_ans in zip(questions, answers):
+				if len(gen_q.split()) not in range(7, 8): continue #10: continue
+				# if len(gen_q.split()) <= 4: continue
+				if gen_q.split()[0].lower() == "when": continue
+				if gen_q.split()[0].lower() == "who": continue
+				print("-"*20)
 				print(f"\nQuestion: {gen_q}")
-				user_ans = input()
+				user_ans = input("Your Answer: ")
 				ans_score = scorer.score([gen_ans, user_ans])
 				if ans_score < 0.5:
 					print(f"Wrong answer. Correct answer is: {gen_ans}.\n")

@@ -94,7 +94,7 @@ class E2EQGPipeline:
         return inputs
 
 def pipeline(use_cuda=True, model=None):
-    model = "valhalla/t5-small-e2e-qg"
+    model = "valhalla/t5-base-e2e-qg"
     if model == "BART":
         model = "valhalla/bart-large-finetuned-squadv1"
     tokenizer = AutoTokenizer.from_pretrained(model)
