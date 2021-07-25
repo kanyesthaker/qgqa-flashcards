@@ -1,0 +1,11 @@
+.Flashcard-bg-container {
+  /* background-image: linear-gradient(
+    rgb(255, 255, 255),
+    rgb(252, 250, 255) 392px
+  ); */
+
+  background-color: rgb(252, 250, 255);
+  padding: 5%;
+  margin-left: auto;
+  margin-right: auto;
+}
