@@ -9,7 +9,6 @@
   text-align: left;
   box-shadow: 0 7px 50px rgb(46 10 99 / 5%), 0 1px 1px 0.6px rgb(46 10 99 / 10%);
 
-  font-family: Tahoma;
   background-color: white;
 
   margin-left: auto;
@@ -25,19 +24,51 @@
   font-size: 18px;
   padding: 6%;
   /* width: 50%; */
+  padding-top: 60px;
+  padding-bottom: 60px;
 }
 
 .Flashcard-answer-container {
   border-top: 1px solid #f5f5f5;
   /* border-style: solid; */
   background-color: #fcfaff;
-  padding: 6%;
   height: 100%;
 }
 
 .Flashcard-answer {
+  padding-left: 4%;
+  padding-right: 4%;
+  padding-top: 60px;
+  padding-bottom: 60px;
 }
 
 .Flashcard-answer-hidden {
   /* position: absolute; */
+}
+
+.Flashcard-buttons-container {
+  display: flex;
+  flex-direction: row;
+  font-size: 16px;
+}
+
+.Flashcard-button-container {
+  padding-top: 7%;
+  padding-bottom: 7%;
+  padding-left: 5%;
+  padding-right: 5%;
+  display: flex;
+  flex-direction: row;
+}
+
+.Flashcard-button-icon {
+  height: 18px;
+  width: 50%;
+  /*Hack to change color of icon: https://stackoverflow.com/questions/22252472/how-to-change-the-color-of-an-svg-element */
+  filter: invert(31%) sepia(18%) saturate(4099%) hue-rotate(18deg)
+    brightness(92%) contrast(101%);
+}
+
+.Flashcard-button-text {
+  /* width: 50%; */
 }
