@@ -10,6 +10,17 @@ import "./flashcard.css";
  * https://stackoverflow.com/questions/68192257/react-how-to-change-opacity-of-element-by-clicking-button
  */
 
+//This should trigger moving to the next flashcard
+function Flashcard_button(props) {
+  const [showAnswer, setShowAnswer] = useState(0);
+
+  return (
+    <div className="Flashcard-button-container">
+      <div></div>
+    </div>
+  );
+}
+
 function Flashcard(props) {
   const [showAnswer, setShowAnswer] = useState(0);
 
@@ -28,6 +39,8 @@ function Flashcard(props) {
           <div className="Flashcard-answer">
             do not assume knowledge of an exact mathematical model of the MDP
           </div>
+          <button className="Flashcard-button-forgot"></button>
+          <button className="Flashcard-button-remember"></button>
         </div>
       </div>
     </div>
