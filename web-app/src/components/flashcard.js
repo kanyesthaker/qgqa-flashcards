@@ -27,17 +27,22 @@ function Flashcard_button(props) {
 }
 
 function Flashcard(props) {
-  const [showAnswer, setShowAnswer] = useState(0);
+  const [opacity, setOpacity] = useState(0);
 
   return (
     <div className="Flashcard-container">
       <div className="Flashcard-question">{props.question}</div>
-      <div
-        onClick={() => setShowAnswer(1)}
-        className="Flashcard-answer-hidden"
-        style={{ opacity: showAnswer }}
-      >
-        <div className="Flashcard-answer-container">
+      {opacity == 0 ? (
+        <div onClick={() => setOpacity(1)} className="Flashcard-answer-hidden">
+          <div className="Flashcard-answer-hidden-text">
+            Click anywhere to reveal
+          </div>
+        </div>
+      ) : (
+        <div
+          className="Flashcard-answer-container"
+          style={{ opacity: opacity }}
+        >
           <div className="Flashcard-answer">{props.answer}</div>
           <div className="Flashcard-buttons-container">
             <Flashcard_button
@@ -54,7 +59,7 @@ function Flashcard(props) {
             ></Flashcard_button>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

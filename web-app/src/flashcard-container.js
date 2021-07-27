@@ -9,6 +9,9 @@ import Flashcard from "./components/flashcard";
  * @param question - a question string as returned in form.js
  */
 
+//Let ESLint know that we are accessing Chrome browser methods
+/* global chrome */
+
 function FlashcardContainer(props) {
   const [url, setUrl] = useState("");
   const [data, setData] = useState([]);
@@ -21,10 +24,10 @@ function FlashcardContainer(props) {
     //Insert Chrome logic here to access current URL. Note that this runs on rerender,
     // and breaks during development, so only uncomment for prod
     //https://blog.usejournal.com/making-an-interactive-chrome-extension-with-react-524483d7aa5d
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const tab_url = tabs[0].url;
-      setUrl(tab_url);
-    });
+    // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    //   const tab_url = tabs[0].url;
+    //   setUrl(tab_url);
+    // });
     //Now, send an Axios POST request
     // const endpoint_string = "";
     // axios

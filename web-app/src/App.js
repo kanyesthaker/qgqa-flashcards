@@ -4,8 +4,6 @@ import FlashcardContainer from "./flashcard-container";
 // import Background from "./images/space.png";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-//Let ESLint know that we are accessing Chrome browser methods
-/* global chrome */
 
 function App() {
   return (
