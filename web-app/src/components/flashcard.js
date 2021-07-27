@@ -26,40 +26,68 @@ function Flashcard_button(props) {
   );
 }
 
+function Flashcard_container(props) {
+  return (
+    <div
+      className="Flashcard-answer-container"
+      style={{ opacity: props.opacity }}
+    >
+      <div className="Flashcard-answer">{props.answer}</div>
+      <div className="Flashcard-buttons-container">
+        <Flashcard_button
+          text={"Forgot"}
+          color="#774F00"
+          bgColor="white"
+          icon={Reload}
+        ></Flashcard_button>
+        <Flashcard_button
+          text={"Remembered"}
+          color="#774F00"
+          bgColor="#FFD37D"
+          icon={Check}
+        ></Flashcard_button>
+      </div>
+    </div>
+  );
+}
+
+function Flashcard_answer_hidden(props) {
+  return (
+    <div className="Flashcard-answer-hidden">
+      <div className="Flashcard-answer-hidden-text">
+        Click anywhere to reveal
+      </div>
+    </div>
+  );
+}
+
 function Flashcard(props) {
-  const [opacity, setOpacity] = useState(0);
+  const [opacity1, setOpacity1] = useState(1);
+  const [opacity2, setOpacity2] = useState(0);
+  const [absolute, setAbsolute] = useState("");
 
   return (
     <div className="Flashcard-container">
       <div className="Flashcard-question">{props.question}</div>
-      {opacity == 0 ? (
-        <div onClick={() => setOpacity(1)} className="Flashcard-answer-hidden">
-          <div className="Flashcard-answer-hidden-text">
-            Click anywhere to reveal
-          </div>
+
+      <div
+        className="Flashcard-answer-hidden"
+        onClick={() => {
+          setOpacity1(0);
+          setOpacity2(1);
+          setAbsolute("absolute");
+        }}
+        style={{ opacity: opacity1, position: absolute }}
+      >
+        <div className="Flashcard-answer-hidden-text">
+          Click anywhere to reveal
         </div>
-      ) : (
-        <div
-          className="Flashcard-answer-container"
-          style={{ opacity: opacity }}
-        >
-          <div className="Flashcard-answer">{props.answer}</div>
-          <div className="Flashcard-buttons-container">
-            <Flashcard_button
-              text={"Forgot"}
-              color="#774F00"
-              bgColor="white"
-              icon={Reload}
-            ></Flashcard_button>
-            <Flashcard_button
-              text={"Remembered"}
-              color="#774F00"
-              bgColor="#FFD37D"
-              icon={Check}
-            ></Flashcard_button>
-          </div>
-        </div>
-      )}
+      </div>
+
+      <Flashcard_container
+        opacity={opacity2}
+        answer={props.answer}
+      ></Flashcard_container>
     </div>
   );
 }
