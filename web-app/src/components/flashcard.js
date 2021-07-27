@@ -1,5 +1,7 @@
 import React, { Component, useState, useEffect } from "react";
 import "./flashcard.css";
+import Check from "../icons/checkmark-sharp.svg";
+import Reload from "../icons/reload-sharp.svg";
 
 /**
  * Given a question, displays a flashcard
@@ -14,6 +16,7 @@ function Flashcard_button(props) {
   return (
     <div
       className="Flashcard-button-container"
+      onClick={props.onPress}
       style={{ backgroundColor: props.bgColor }}
     >
       <img className="Flashcard-button-icon" src={props.icon}></img>
@@ -31,6 +34,21 @@ function Flashcard_container(props) {
       style={{ opacity: props.opacity }}
     >
       <div className="Flashcard-answer">{props.answer}</div>
+      <div className="Flashcard-buttons-container">
+        <Flashcard_button
+          text={"Forgot"}
+          color="#774F00"
+          bgColor="white"
+          icon={Reload}
+        ></Flashcard_button>
+        <Flashcard_button
+          text={"Remembered"}
+          color="#774F00"
+          bgColor="#FFD37D"
+          icon={Check}
+          onPress={props.onPress}
+        ></Flashcard_button>
+      </div>
     </div>
   );
 }
@@ -61,6 +79,7 @@ function Flashcard(props) {
       <Flashcard_container
         opacity={opacity2}
         answer={props.answer}
+        onPress={props.onPress}
       ></Flashcard_container>
     </div>
   );
