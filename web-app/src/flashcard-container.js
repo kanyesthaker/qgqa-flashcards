@@ -2,7 +2,12 @@
 import React, { useState, useEffect } from "react";
 
 import "./flashcard-container.css";
+import "./components/flashcard.css";
+
 import Flashcard from "./components/flashcard";
+import SampleData from "./data.js";
+import Check from "./icons/checkmark-sharp.svg";
+import Reload from "./icons/reload-sharp.svg";
 
 /**
  * Given a question, displays a flashcard
@@ -12,13 +17,51 @@ import Flashcard from "./components/flashcard";
 //Let ESLint know that we are accessing Chrome browser methods
 /* global chrome */
 
+function Flashcard_button(props) {
+  const Icon = props.icon;
+  return (
+    <div
+      className="Flashcard-button-container"
+      style={{ backgroundColor: props.bgColor }}
+    >
+      <img className="Flashcard-button-icon" src={props.icon}></img>
+      <div className="Flashcard-button-text" style={{ color: props.color }}>
+        {props.text}
+      </div>
+    </div>
+  );
+}
+
 function FlashcardContainer(props) {
   const [url, setUrl] = useState("");
   const [data, setData] = useState([]);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [key, setKey] = useState(1);
 
   //Hardcode this for now while we do not have an endpoint
+  const loaded_data = SampleData;
+  var processed_data = loaded_data["id"];
+
+  useEffect(() => {
+    var object_to_load = processed_data.pop();
+
+    if (object_to_load != null) {
+      var curr_question = object_to_load.question;
+      var curr_answer = object_to_load.answer;
+      console.log(processed_data);
+      console.log(curr_answer);
+      setQuestion(curr_question);
+      setAnswer(curr_answer);
+    }
+  }, []);
+
+  // var queue = [];
+  // for (var i in loaded_data["id"]) queue.push([i, loaded_data[i]]);
+  // console.log(queue);
+  //Note that may need to intentionally create a queue here, try shift
+
+  //Experiment with converting this to an array
 
   useEffect(() => {
     //Insert Chrome logic here to access current URL. Note that this runs on rerender,
@@ -41,18 +84,44 @@ function FlashcardContainer(props) {
     //   .catch(function (error) {
     //     console.log(error);
     //   });
-
-    setQuestion(
-      "What is the main difference between classical dynamic programming methods and reinforcement learning algorithms?"
-    );
-    setAnswer(
-      "do not assume knowledge of an exact mathematical model of the MDP"
-    );
+    //This handles logic for changing to the next card
   });
+
+  function handleEvent(e) {
+    e.preventDefault();
+    console.log("handler ran");
+    var object_to_load = processed_data.pop();
+    if (object_to_load != null) {
+      var curr_question = object_to_load["question"];
+      var curr_answer = object_to_load["answer"];
+      console.log(curr_answer);
+      console.log(curr_question);
+
+      setQuestion(curr_question);
+      setAnswer(curr_answer);
+      //Great hack here: to force a component dismount, we update keys of a flashcard manually
+      setKey(key + 1);
+    }
+  }
 
   return (
     <div className="Flashcard-bg-container">
-      <Flashcard question={question} answer={answer}></Flashcard>
+      <Flashcard key={key} question={question} answer={answer}></Flashcard>
+      <div className="Flashcard-buttons-container">
+        <Flashcard_button
+          text={"Forgot"}
+          color="#774F00"
+          bgColor="white"
+          icon={Reload}
+        ></Flashcard_button>
+        <Flashcard_button
+          text={"Remembered"}
+          color="#774F00"
+          bgColor="#FFD37D"
+          icon={Check}
+        ></Flashcard_button>
+      </div>
+      <button onClick={handleEvent}></button>
       <div>This is URL {url}</div>
     </div>
   );
