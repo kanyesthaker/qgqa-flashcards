@@ -1,29 +1,33 @@
 import torch
 import fastT5
 from transformers import AutoTokenizer
+import transformers
 import time
 import os
+from scorer import Scorer
+from scraper import Scraper
 
 class QGPipeline:
     def __init__(self, model="valhalla/t5-base-e2e-qg", use_cuda=False):
         self.tokenizer = AutoTokenizer.from_pretrained(model)
-        self.model = self.__onnx_init__(model)
+        self.model = self._onnx_init(model)
         self.device = "cuda" if torch.cuda.is_available() and use_cuda else "cpu"
 
         self.model.to(self.device)
 
         self.default_generate_kwargs = {
             "max_length": 256, #256
-            "num_beams": 5,
+            "num_beams": 3,
             "num_return_sequences": 2,
-            "max_time":5,
+            # "max_time":5,
+            # "max_length": 50,
             "length_penalty": 2, #1.5
             "no_repeat_ngram_size": 3,
-            "early_stopping": False, #True
+            "early_stopping": True, #True
         }
         # assert self.model.__class__.__name__ in ["T5ForConditionalGeneration", "BartForConditionalGeneration"]
 
-    def __onnx_init__(self, model="valhalla/t5-base-e2e-qg"):
+    def _onnx_init(self, model="valhalla/t5-base-e2e-qg"):
         if not "models" in next(os.walk("."))[1]:
             return fastT5.export_and_get_onnx_model(model)
 
@@ -78,5 +82,8 @@ class QGPipeline:
         return inputs
 
 class QAPipeline:
+    # TODO: implement ONNX for QA pipeline
     def __init__(self, model=""):
         pass
+
+

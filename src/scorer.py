@@ -5,12 +5,22 @@ class Scorer:
 	def __init__(self):
 		self.model = SentenceTransformer("paraphrase-MiniLM-L6-v2")
 
-	def gen_embeddings(self, sentence):
+	def _gen_embeddings(self, sentence):
 		return self.model.encode(sentence)
 
-	def score(self, sentences):
-		fvec1, fvec2 = list(map(self.gen_embeddings, sentences))
-		return cosine_similarity(fvec1.reshape(1, -1), fvec2.reshape(1, -1))[0][0]
+	def verify(self, sentences, threshold=0.5, verbose=False):
+		fvec1, fvec2 = list(map(self._gen_embeddings, sentences))
+		score=cosine_similarity(fvec1.reshape(1, -1), fvec2.reshape(1, -1))[0][0]
+		if verbose:
+			return {
+				"cosine_similarity":score,
+				"sentence_a":sentences[0],
+				"sentence_b":sentences[1],
+				"threshold":threshold,
+				"pass":score >= threshold
+			}
+		else:
+			return score >= threshold
 
 
 # def __main__():

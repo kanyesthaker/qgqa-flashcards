@@ -9,4 +9,5 @@ requests
 protobuf
 onnxruntime-tools
 sympy
+yaspin
 nlp==0.2.0

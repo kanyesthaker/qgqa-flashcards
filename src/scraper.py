@@ -26,7 +26,6 @@ class Scraper:
         sentences = pattern.findall(ret)
         ret = " ".join(sentences)
         ret = re.sub(r'([A-Z][^ \.!?]+[\.!?])', '', ret)
-        print(ret)
         return ret
 
 def __main__():
