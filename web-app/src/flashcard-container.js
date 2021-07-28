@@ -17,22 +17,6 @@ import Reload from "./icons/reload-sharp.svg";
 //Let ESLint know that we are accessing Chrome browser methods
 /* global chrome */
 
-function Flashcard_button(props) {
-  const Icon = props.icon;
-  return (
-    <div
-      className="Flashcard-button-container"
-      onClick={props.onPress}
-      style={{ backgroundColor: props.bgColor }}
-    >
-      <img className="Flashcard-button-icon" src={props.icon}></img>
-      <div className="Flashcard-button-text" style={{ color: props.color }}>
-        {props.text}
-      </div>
-    </div>
-  );
-}
-
 function FlashcardContainer(props) {
   const [url, setUrl] = useState("");
   const [data, setData] = useState([]);
