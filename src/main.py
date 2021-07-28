@@ -37,10 +37,21 @@ def gen_qa(questions, context):
 	# qa = qa_pipeline('question-answering', model="distilbert-base-cased-distilled-squad")
 	return [qa(question=question, context=context)["answer"] for question in questions]
 
+def filterPoorQuestions(gen_q,gen_ans):
+	if len(gen_q.split()) not in range(6, 22): return True 
+	elif gen_q.split()[0].lower() == "when": return True
+	elif gen_q.split()[0].lower() == "who": return True
+	# Sam: if doesn't end with a question, break it
+	elif  gen_q[-1].lower() != "?": return True
+	elif  len(gen_ans.split()) > 12: return True 
+	else: return False
+
 def interactive():
 	scorer=Scorer()
 	scraper = Scraper()
 	qg, qa = init_pipelines()
+
+
 
 	now = time.time()
 	while True and (time.time()-now) < 60:
@@ -57,22 +68,12 @@ def interactive():
 			answers = [qa(question=question, context=context)["answer"] for question in questions]
 			print(questions)
 			print(answers)
-
 			print(time.time() - start_time, "seconds")
 
-
 			for gen_q,gen_ans in zip(questions, answers):
-				if len(gen_q.split()) not in range(6, 22
-				): continue #10: continue
-				# if len(gen_q.split()) <= 4: continue
-				if gen_q.split()[0].lower() == "when": continue
-				if gen_q.split()[0].lower() == "who": continue
-				# Sam: if doesn't end with a question, break it
-				if gen_q[-1].lower() != "?": continue
-				if len(gen_ans.split()) > 12: continue #10: continue
 
-
-
+				if filterPoorQuestions(gen_q,gen_ans):
+					continue
 
 				print("-"*20)
 				print(f"\nQuestion: {gen_q}")
