@@ -34,11 +34,11 @@ class E2EQGPipeline:
             # self.model_type = "bart"
         
         self.default_generate_kwargs = {
-            "max_length": 256,
+            "max_length": 2048, #256
             "num_beams": 4,
-            "length_penalty": 1.5,
+            "length_penalty": 0, #1.5
             "no_repeat_ngram_size": 3,
-            "early_stopping": True,
+            "early_stopping": False, #True
         }
     
     def __call__(self, context: str, **generate_kwargs):

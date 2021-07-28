@@ -7,4 +7,6 @@ torch
 bs4
 requests
 protobuf
+onnxruntime-tools
+sympy
 nlp==0.2.0
