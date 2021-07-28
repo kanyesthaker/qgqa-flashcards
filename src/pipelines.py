@@ -7,6 +7,8 @@ from transformers import(
     PreTrainedModel,
     PreTrainedTokenizer,
 )
+from fastT5 import export_and_get_onnx_model
+
 
 class E2EQGPipeline:
     def __init__(
@@ -16,18 +18,20 @@ class E2EQGPipeline:
         use_cuda: bool
     ) :
 
-        self.model = model
+        # self.model = model
+        self.model = export_and_get_onnx_model('valhalla/t5-base-e2e-qg')
+
         self.tokenizer = tokenizer
 
         self.device = "cuda" if torch.cuda.is_available() and use_cuda else "cpu"
         self.model.to(self.device)
 
-        assert self.model.__class__.__name__ in ["T5ForConditionalGeneration", "BartForConditionalGeneration"]
+        # assert self.model.__class__.__name__ in ["T5ForConditionalGeneration", "BartForConditionalGeneration"]
         
-        if "T5ForConditionalGeneration" in self.model.__class__.__name__:
-            self.model_type = "t5"
-        else:
-            self.model_type = "bart"
+        # if "T5ForConditionalGeneration" in self.model.__class__.__name__:
+        self.model_type = "t5"
+        # else:
+            # self.model_type = "bart"
         
         self.default_generate_kwargs = {
             "max_length": 256,
