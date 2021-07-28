@@ -16,6 +16,7 @@ def gen_qaqg(context):
 	questions = qg(context)
 
 	answers = [qa(question=question, context=context)["answer"] for question in questions]
+
 	return list(zip(questions1, answers))
 
 def init_pipelines():
@@ -50,14 +51,29 @@ def interactive():
 		contexts = [' '.join(context[i:i+n]) for i in range(0, len(context), n)]
 
 		for context in contexts:
+			start_time = time.time()
+
 			questions = qg(context)
 			answers = [qa(question=question, context=context)["answer"] for question in questions]
+			print(questions)
+			print(answers)
+
+			print(time.time() - start_time, "seconds")
+
 
 			for gen_q,gen_ans in zip(questions, answers):
-				if len(gen_q.split()) not in range(7, 10): continue #10: continue
+				if len(gen_q.split()) not in range(6, 22
+				): continue #10: continue
 				# if len(gen_q.split()) <= 4: continue
 				if gen_q.split()[0].lower() == "when": continue
 				if gen_q.split()[0].lower() == "who": continue
+				# Sam: if doesn't end with a question, break it
+				if gen_q[-1].lower() != "?": continue
+				if len(gen_ans.split()) > 12: continue #10: continue
+
+
+
+
 				print("-"*20)
 				print(f"\nQuestion: {gen_q}")
 				user_ans = input("Your Answer: ")
@@ -66,6 +82,7 @@ def interactive():
 					print(f"Wrong answer. Correct answer is: {gen_ans}.\n")
 				else:
 					print(f"Correct. Correct answer is: {gen_ans}.\n")
+
 
 
 def __main__():
