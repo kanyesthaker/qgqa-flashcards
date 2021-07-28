@@ -28,8 +28,13 @@ function FlashcardContainer(props) {
   const loaded_data = SampleData;
   var processed_data = loaded_data["id"];
 
+  //Run a single time on mount
   useEffect(() => {
     var object_to_load = processed_data.pop();
+    chrome.storage.sync.set({ currArray: processed_data }, function () {
+      console.log("Set to" + processed_data);
+      //
+    });
 
     if (object_to_load != null) {
       var curr_question = object_to_load.question;
@@ -56,6 +61,7 @@ function FlashcardContainer(props) {
       const tab_url = tabs[0].url;
       setUrl(tab_url);
     });
+
     //Now, send an Axios POST request
     // const endpoint_string = "";
     // axios
@@ -74,19 +80,35 @@ function FlashcardContainer(props) {
 
   function handleEvent(e) {
     e.preventDefault();
-    console.log("handler ran");
-    var object_to_load = processed_data.pop();
-    if (object_to_load != null) {
-      var curr_question = object_to_load["question"];
-      var curr_answer = object_to_load["answer"];
-      console.log(curr_answer);
-      console.log(curr_question);
+    //Get the current Chrome state
+    var object_to_load;
+    chrome.storage.sync.get(["currArray"], function (result) {
+      //Now pop
+      console.log(result.currArray);
+      object_to_load = result.currArray.pop();
 
-      setQuestion(curr_question);
-      setAnswer(curr_answer);
-      //Great hack here: to force a component dismount, we update keys of a flashcard manually
-      setKey(key + 1);
-    }
+      //And set again
+      chrome.storage.sync.set({ currArray: result }, function () {
+        console.log("After result, Handler Set to" + result);
+        console.log("this is ob2l" + object_to_load);
+        //Query our local storage to get the most updated
+        if (object_to_load != null) {
+          var curr_question = object_to_load["question"];
+          var curr_answer = object_to_load["answer"];
+          console.log(curr_answer);
+          console.log(curr_question);
+
+          setQuestion(curr_question);
+          setAnswer(curr_answer);
+          //Great hack here: to force a component dismount, we update keys of a flashcard manually
+          setKey(key + 1);
+        }
+
+        //
+      });
+    });
+
+    // var object_to_load = processed_data.pop();
   }
 
   return (
