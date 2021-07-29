@@ -22,8 +22,9 @@ const FlashcardAnswerContainer = styled.div`
 const FlashcardAnswer = styled.div`
   padding-left: 4%;
   padding-right: 4%;
-  padding-top: 36px;
-  padding-bottom: 36px;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  font-size: 14px;
 
   opacity: ${(props) => props.opacity};
   position: ${(props) => props.absolute};
