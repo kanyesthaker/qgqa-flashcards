@@ -14,5 +14,5 @@
     "48": "logo512.png",
     "128": "logo512.png"
   },
-  "permissions": ["tabs"]
+  "permissions": ["tabs","storage"]
 }
