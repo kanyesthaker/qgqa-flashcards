@@ -5,7 +5,12 @@
   ); */
 
   background-color: rgb(252, 250, 255);
-  padding: 5%;
   margin-left: auto;
   margin-right: auto;
+
+  margin-top: 5%;
+  margin-bottom: 5%;
+
+  /* Controls size of extension */
+  width: 350px;
 }

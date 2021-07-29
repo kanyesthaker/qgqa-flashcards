@@ -147,7 +147,7 @@ function FlashcardContainer(props) {
         onPress={handleEvent}
       ></Flashcard>
 
-      <div>This is URL {url}</div>
+      {/* <div>This is URL {url}</div> */}
     </div>
   );
 }
