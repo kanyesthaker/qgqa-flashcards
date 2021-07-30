@@ -15,13 +15,21 @@
   },
 
   "action": {
-    "default_popup": "index.html",
-    "default_title": "Open the popup"
+    "default_title": "Open the popup",
+    "default_popup": "index.html"
   },
   "icons": {
     "16": "logo512.png",
     "48": "logo512.png",
     "128": "logo512.png"
   },
-  "permissions": ["tabs", "storage", "commands", "background"]
+  "permissions": [
+    "tabs",
+    "storage",
+    "commands",
+    "background",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": ["*://*/*"]
 }
