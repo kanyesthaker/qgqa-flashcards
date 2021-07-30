@@ -40,7 +40,7 @@ function FlashcardContainer(props) {
    **/
   function initFlashcards() {
     var processed_data = loaded_data["id"];
-    var object_to_load = processed_data.pop();
+    var object_to_load = processed_data.shift();
     chrome.storage.sync.set({ currObject: object_to_load });
 
     chrome.storage.sync.set({ currArray: processed_data }, function () {
@@ -105,17 +105,17 @@ function FlashcardContainer(props) {
     //This handles logic for changing to the next card
   });
 
-  /**handleEvent():
+  /**handleEventRemember():
    * Helper function that calls onClick of when the "Remember"
    * button is clicked.  This gets the array we use as a queue,
    * pops off the next value, and if this value is not NULL (signififying no more flash cards)
    * We update React state and Chrome.storage
    *
    **/
-  function handleEvent() {
+  function handleEventRemember() {
     //Get the current array stored in Chrome storage
     chrome.storage.sync.get(["currArray"], function (results) {
-      var object_to_load = results.currArray.pop();
+      var object_to_load = results.currArray.shift();
       //Now set curr array equal to the popped value
       //If there are no more entries to pop, do nothing
       if (object_to_load != null) {
@@ -138,13 +138,60 @@ function FlashcardContainer(props) {
     });
   }
 
+  /**handleEventForgot():
+   * Helper function that calls onClick of when the "Forgot"
+   * button is clicked.  This gets the array we use as a queue,
+   * pops off the next value, and then pops back on if this value is not NULL (signififying no more flash cards)
+   * We update React state and Chrome.storage
+   * TO DO: Figure out how to combine this in one handleEvent with some kind of bool
+   *
+   **/
+  function handleEventForgot() {
+    //Get the current object
+    chrome.storage.sync.get(["currObject"], function (result) {
+      var data = result.currObject;
+
+      //Get the current array stored in Chrome storage
+      chrome.storage.sync.get(["currArray"], function (results) {
+        //Push current object to the end of the results array
+        var len_push_to_array = results.currArray.push(data);
+        //Get the next value
+        var object_to_load = results.currArray.shift();
+        //Now set curr array equal to the popped value
+
+        //If there are no more entries to pop, do nothing
+        if (object_to_load != null) {
+          var updated_curr_array = results.currArray;
+
+          //Now, store the popped value in local storage to show on rerender
+          chrome.storage.sync.set({ currObject: object_to_load });
+          chrome.storage.sync.set(
+            { currArray: updated_curr_array },
+            function () {
+              //Query our local storage to get the most updated
+              var curr_question = object_to_load["question"];
+              var curr_answer = object_to_load["answer"];
+              setQuestion(curr_question);
+              setAnswer(curr_answer);
+              //Great hack here: to force a component dismount, we update keys of a flashcard manually
+              setKey(key + 1);
+            }
+          );
+        } else {
+          //Do nothing
+        }
+      });
+    });
+  }
+
   return (
     <div className="Flashcard-bg-container">
       <Flashcard
         key={key}
         question={question}
         answer={answer}
-        onPress={handleEvent}
+        onRemembered={handleEventRemember}
+        onForgot={handleEventForgot}
       ></Flashcard>
 
       {/* <div>This is URL {url}</div> */}

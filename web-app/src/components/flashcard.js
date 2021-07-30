@@ -40,10 +40,15 @@ const FlashcardButtonsContainer = styled.div`
 
 function Flashcard_button(props) {
   const Icon = props.icon;
+  if (props.onForgot == "") {
+    var onPress = props.onRemembered;
+  } else {
+    var onPress = props.onForgot;
+  }
   return (
     <div
       className="Flashcard-button-container"
-      onClick={props.onPress}
+      onClick={onPress}
       style={{ backgroundColor: props.bgColor }}
     >
       <img className="Flashcard-button-icon" src={props.icon}></img>
@@ -75,13 +80,16 @@ function Flashcard_container(props) {
           color="#774F00"
           bgColor="white"
           icon={Reload}
+          onRemembered={""}
+          onForgot={props.onForgot}
         ></Flashcard_button>
         <Flashcard_button
           text={"Remembered"}
           color="#774F00"
           bgColor="#FFD37D"
           icon={Check}
-          onPress={props.onPress}
+          onRemembered={props.onRemembered}
+          onForgot={""}
         ></Flashcard_button>
       </FlashcardButtonsContainer>
     </FlashcardAnswerContainer>
@@ -116,8 +124,9 @@ function Flashcard(props) {
       <Flashcard_container
         opacity={opacity2}
         answer={props.answer}
-        onPress={props.onPress}
         absolute={absolute2}
+        onRemembered={props.onRemembered}
+        onForgot={props.onForgot}
       ></Flashcard_container>
     </div>
   );
