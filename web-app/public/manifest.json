@@ -1,18 +1,35 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
+  "background": {
+    "service_worker": "background.js"
+  },
 
   "name": "My Extension",
   "description": "This extension is a starting point to create a real Chrome extension",
   "version": "0.0.1",
+  "commands": {
+    "_execute_action": {
+      "suggested_key": "Ctrl+Shift+Y",
+      "description": "Test Command"
+    }
+  },
 
-  "browser_action": {
-    "default_popup": "index.html",
-    "default_title": "Open the popup"
+  "action": {
+    "default_title": "Open the popup",
+    "default_popup": "index.html"
   },
   "icons": {
     "16": "logo512.png",
     "48": "logo512.png",
     "128": "logo512.png"
   },
-  "permissions": ["tabs"]
+  "permissions": [
+    "tabs",
+    "storage",
+    "commands",
+    "background",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": ["*://*/*"]
 }

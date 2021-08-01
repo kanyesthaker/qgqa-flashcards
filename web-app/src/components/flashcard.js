@@ -2,6 +2,7 @@ import React, { Component, useState, useEffect } from "react";
 import "./flashcard.css";
 import Check from "../icons/checkmark-sharp.svg";
 import Reload from "../icons/reload-sharp.svg";
+import styled, { css } from "styled-components";
 
 /**
  * Given a question, displays a flashcard
@@ -11,12 +12,43 @@ import Reload from "../icons/reload-sharp.svg";
  */
 
 //This should trigger moving to the next flashcard
+const FlashcardAnswerContainer = styled.div`
+  border-top: 1px solid #f5f5f5;
+  background-color: #fcfaff;
+  opacity: ${(props) => props.opacity};
+  position: ${(props) => props.absolute};
+`;
+
+const FlashcardAnswer = styled.div`
+  padding-left: 4%;
+  padding-right: 4%;
+  padding-top: 24px;
+  padding-bottom: 24px;
+  font-size: 14px;
+
+  opacity: ${(props) => props.opacity};
+  position: ${(props) => props.absolute};
+`;
+
+const FlashcardButtonsContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  font-size: 16px;
+  opacity: ${(props) => props.opacity};
+  position: ${(props) => props.absolute};
+`;
+
 function Flashcard_button(props) {
   const Icon = props.icon;
+  if (props.onForgot == "") {
+    var onPress = props.onRemembered;
+  } else {
+    var onPress = props.onForgot;
+  }
   return (
     <div
       className="Flashcard-button-container"
-      onClick={props.onPress}
+      onClick={onPress}
       style={{ backgroundColor: props.bgColor }}
     >
       <img className="Flashcard-button-icon" src={props.icon}></img>
@@ -28,35 +60,47 @@ function Flashcard_button(props) {
 }
 
 function Flashcard_container(props) {
+  const mystyle = {
+    opacity: props.opacity,
+    position: props.absolute,
+  };
   return (
-    <div
-      className="Flashcard-answer-container"
-      style={{ opacity: props.opacity }}
-    >
-      <div className="Flashcard-answer">{props.answer}</div>
-      <div className="Flashcard-buttons-container">
+    // <div className="Flashcard-answer-container" style={mystyle}>
+    <FlashcardAnswerContainer opacity={props.opacity} absolute={props.absolute}>
+      <FlashcardAnswer opacity={props.opacity} absolute={props.absolute}>
+        {props.answer}
+      </FlashcardAnswer>
+
+      <FlashcardButtonsContainer
+        opacity={props.opacity}
+        absolute={props.absolute}
+      >
         <Flashcard_button
           text={"Forgot"}
           color="#774F00"
           bgColor="white"
           icon={Reload}
+          onRemembered={""}
+          onForgot={props.onForgot}
         ></Flashcard_button>
         <Flashcard_button
           text={"Remembered"}
           color="#774F00"
           bgColor="#FFD37D"
           icon={Check}
-          onPress={props.onPress}
+          onRemembered={props.onRemembered}
+          onForgot={""}
         ></Flashcard_button>
-      </div>
-    </div>
+      </FlashcardButtonsContainer>
+    </FlashcardAnswerContainer>
   );
 }
 
 function Flashcard(props) {
   const [opacity1, setOpacity1] = useState(1);
   const [opacity2, setOpacity2] = useState(0);
-  const [absolute, setAbsolute] = useState("");
+  const [absolute1, setAbsolute1] = useState("");
+  const [absolute2, setAbsolute2] = useState("absolute");
 
   return (
     <div className="Flashcard-container">
@@ -67,9 +111,10 @@ function Flashcard(props) {
         onClick={() => {
           setOpacity1(0);
           setOpacity2(1);
-          setAbsolute("absolute");
+          setAbsolute1("absolute");
+          setAbsolute2("");
         }}
-        style={{ opacity: opacity1, position: absolute }}
+        style={{ opacity: opacity1, position: absolute1 }}
       >
         <div className="Flashcard-answer-hidden-text">
           Click anywhere to reveal
@@ -79,7 +124,9 @@ function Flashcard(props) {
       <Flashcard_container
         opacity={opacity2}
         answer={props.answer}
-        onPress={props.onPress}
+        absolute={absolute2}
+        onRemembered={props.onRemembered}
+        onForgot={props.onForgot}
       ></Flashcard_container>
     </div>
   );

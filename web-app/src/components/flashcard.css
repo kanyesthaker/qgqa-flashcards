@@ -1,6 +1,6 @@
 .Flashcard-container {
-  height: 450px;
-  width: 300px;
+  /* height: 100px; */
+  width: 400px;
   border-radius: 6px;
   /* border-style: solid;
   border-width: 1px;
@@ -21,31 +21,34 @@
 }
 
 .Flashcard-question {
-  font-size: 18px;
-  padding: 6%;
-  height: 50%;
-  padding-top: 60px;
-  padding-bottom: 60px;
-}
-
-.Flashcard-answer-container {
-  border-top: 1px solid #f5f5f5;
-  /* border-style: solid; */
-  background-color: #fcfaff;
-  /* height: 100%; */
-}
-
-.Flashcard-answer {
+  font-size: 14px;
+  /* padding: 6%; */
   padding-left: 4%;
   padding-right: 4%;
-  padding-top: 60px;
-  padding-bottom: 60px;
+  /* height: 50%; */
+  padding-top: 16px;
+  padding-bottom: 16px;
 }
+
+/* .Flashcard-answer-container {
+  border-top: 1px solid #f5f5f5;
+  /* border-style: solid; */
+/* background-color: #fcfaff; */
+/* height: 100%; */
+/* } */
+/* .Flashcard-answer {
+  padding-left: 4%;
+  padding-right: 4%;
+  padding-top: 36px;
+  padding-bottom: 36px;
+} */
 
 .Flashcard-answer-hidden {
   /* position: absolute; */
-  padding-top: 60px;
-  padding-bottom: 60px;
+  padding-top: 36px;
+  padding-bottom: 36px;
+  border-top: 1px solid #f5f5f5;
+  background-color: #fcfaff;
   /* height: 100%; */
 
   cursor: pointer;
@@ -55,17 +58,18 @@
   text-align: center;
 }
 
-.Flashcard-buttons-container {
+/* .Flashcard-buttons-container {
   display: flex;
   flex-direction: row;
   font-size: 16px;
-}
+} */
 
 .Flashcard-button-container {
-  padding-top: 7%;
-  padding-bottom: 7%;
+  padding-top: 3%;
+  padding-bottom: 3%;
   padding-left: 5%;
   padding-right: 5%;
+  width: 410px;
   display: flex;
   flex-direction: row;
 
@@ -73,7 +77,7 @@
 }
 
 .Flashcard-button-icon {
-  height: 18px;
+  height: 14px;
   width: 50%;
   /*Hack to change color of icon: https://stackoverflow.com/questions/22252472/how-to-change-the-color-of-an-svg-element */
   filter: invert(31%) sepia(18%) saturate(4099%) hue-rotate(18deg)
@@ -82,4 +86,5 @@
 
 .Flashcard-button-text {
   /* width: 50%; */
+  font-size: 12px;
 }
