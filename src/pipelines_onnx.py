@@ -83,7 +83,7 @@ class QGPipeline:
 
 class QAPipeline:
     # TODO: implement ONNX for QA pipeline
-    def __init__(self, model=""):
-        pass
+    def __init__(self, model="deepset/roberta-base-squad2"):
+        self.tokenizer = model
 
 
