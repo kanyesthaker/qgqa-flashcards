@@ -48,6 +48,12 @@ function highlightText() {
       if (text_in_div != null && text_in_div.includes(match_string)) {
         console.log("Conditional ran");
         divs[i].style["background-color"] = "rgba(255, 211, 125, 0.2)";
+        divs[i].scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest",
+        });
+
         divs[i + 1].style["background-color"] = "rgba(255, 211, 125, 0.2)";
 
         //Now, highight the next div
