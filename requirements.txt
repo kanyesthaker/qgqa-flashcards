@@ -10,4 +10,5 @@ protobuf
 onnxruntime-tools
 sympy
 yaspin
+sagemaker
 nlp==0.2.0
