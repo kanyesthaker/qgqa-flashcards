@@ -1,6 +1,6 @@
 import boto3
 import json
-from lambda_flashcards import LambdaFlashcards
+from lambdaflashcards import LambdaFlashcards
 import urllib
 
 def generate(event, context):
