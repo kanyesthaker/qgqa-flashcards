@@ -36,12 +36,12 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-pip install --target ./package -r requirements.txt
+pip install --target ./package -r ../../requirements.txt
 cd package
 zip -r9 ${OLDPWD}/function.zip .
 cd ${OLDPWD}
 zip -g function.zip "${POSITIONAL[@]}"
-if [ "${DEPLOY}" = launch ]
+if [ "${DEPLOY}" = deploy ]
 then
     aws lambda create-function --function-name "${NAME}" --runtime python3.8 --zip-file fileb://function.zip --handler "${HANDLER}" --role arn:aws:iam::060605871980:role/SagemakerFull
 fi
@@ -52,6 +52,7 @@ fi
 rm ./function.zip
 sudo rm -rf ./package
 
+cd ..
 git add *
 git commit -m "${DEPLOY} AWS Lambda function ${NAME}"
 git push origin main
