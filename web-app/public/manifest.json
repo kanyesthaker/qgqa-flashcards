@@ -4,8 +4,8 @@
     "service_worker": "background.js"
   },
 
-  "name": "My Extension",
-  "description": "This extension is a starting point to create a real Chrome extension",
+  "name": "Ferret",
+  "description": "AI-flashcards that help you learn whatever you'd like, wherever you go on the internet. ",
   "version": "0.0.1",
   "commands": {
     "_execute_action": {
