@@ -1,17 +1,13 @@
 import os
 import io
 import json
-import time
 import sagemaker
 from sagemaker.predictor import json_deserializer, Predictor
 from sagemaker.serializers import NumpySerializer, JSONSerializer
 from sagemaker.deserializers import JSONDeserializer
 import torch
-import fastT5
-from transformers import AutoTokenizer
 import transformers
 import time
-import os
 from scorer import Scorer
 from scraper import Scraper
 
