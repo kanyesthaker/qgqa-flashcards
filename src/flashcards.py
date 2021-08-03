@@ -1,5 +1,6 @@
 from transformers import pipeline
 from pipelines_onnx import QGPipeline
+from pipelines_sagemaker import QGSagemaker, QASagemaker 
 from scorer import Scorer
 from scraper import Scraper
 from yaspin import yaspin
@@ -11,21 +12,34 @@ class Flashcards:
         self,
         qg_model="valhalla/t5-base-e2e-qg",
         qa_model="deepset/roberta-base-squad2",
-        use_cuda=False
+        use_cuda=False,
+        online=False,
     ):
-        self.qg_model = self._spinner(
-            "Loading Question Generation Model...",
-            QGPipeline,
-            model=qg_model,
-            use_cuda=use_cuda
-        )
-        self.qa_model = self._spinner(
-            "Loading Question Answering Model...",
-            pipeline,
-            'question-answering',
-            model=qa_model,
-            tokenizer=qa_model
-        )
+        self.online = online
+        if not self.online:
+            self.qg_model = self._spinner(
+                "Loading Question Generation Model...",
+                QGPipeline,
+                model=qg_model,
+                use_cuda=use_cuda
+            )
+            self.qa_model = self._spinner(
+                "Loading Question Answering Model...",
+                pipeline,
+                'question-answering',
+                model=qa_model,
+                tokenizer=qa_model
+            )
+        else:
+            self.qg_model = self._spinner(
+                "Loading Sagemaker QG Model...",
+                QGSagemaker
+            )
+            self.qa_model = self._spinner(
+                "Loading Sagemaker QA Model...",
+                QASagemaker
+            )
+
         self.use_cuda = use_cuda
         self.scorer = Scorer()
         self.scraper = Scraper()
@@ -38,7 +52,7 @@ class Flashcards:
             not [question_word in question.lower() for question_word in ["what", "where", "how"]]
         )
 
-    def _batch(self, context, batch_size=100):
+    def _batch(self, context, batch_size=30):
         tokens = context.split()
         return [' '.join(tokens[i:i+batch_size]) for i in range(0, len(tokens), batch_size)]
 
@@ -79,7 +93,14 @@ class Flashcards:
 
                 for question in batch_questions:
                     if self._filter(question): continue
-                    answer = self.qa_model(question=question, context=batch)["answer"]
+                    if i == 0:
+                        qa_context = ".".join([batches[i], batches[i+1]])
+                    else:
+                        qa_context = ".".join(batches[i-1:i+2])
+                    if not self.online:
+                        answer = self.qa_model(question=question, context=batch)["answer"]
+                    else:
+                        answer = self.qa_model(question, qa_context)
                     print("-"*40)
                     print(f"\nQuestion: {question}")
                     user_input = input("Your Answer: ")
@@ -87,4 +108,6 @@ class Flashcards:
                         print("Correct!\n")
                     else:
                         print(f"Incorrect! Correct answer: {answer}\n")
+
+
         
