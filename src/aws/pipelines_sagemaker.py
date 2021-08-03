@@ -1,15 +1,8 @@
-import os
-import io
-import json
 import sagemaker
 from sagemaker.predictor import json_deserializer, Predictor
 from sagemaker.serializers import NumpySerializer, JSONSerializer
 from sagemaker.deserializers import JSONDeserializer
-import torch
-import transformers
 import time
-from scorer import Scorer
-from scraper import Scraper
 
 QA_NAME = "huggingface-pytorch-inference-2021-08-01-00-56-34-532"
 QG_NAME = "valhalla-t5-small-e2e-qg-20210802-2021-08-03-00-19-03-232"

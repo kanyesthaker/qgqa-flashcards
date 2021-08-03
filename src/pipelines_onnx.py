@@ -5,7 +5,7 @@ import transformers
 import time
 import os
 from scorer import Scorer
-from scraper import Scraper
+from aws.scraper import Scraper
 
 class QGPipeline:
     def __init__(self, model="valhalla/t5-base-e2e-qg", use_cuda=False):
