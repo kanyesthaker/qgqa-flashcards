@@ -46,6 +46,6 @@ class LambdaFlashcards:
                     "answer":answer,
                     "context":qa_context
                 })
-        
+        print(json.loads(json.dumps(r)))
         return json.loads(json.dumps(r))
 
