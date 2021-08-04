@@ -37,9 +37,9 @@ def segment_text(event, context):
     ans_batches = {}
     for i, e in enumerate(question_batches):
         if i == 0:
-            ans_batches[i] = question_batches[i:i+2]
+            ans_batches[i] = " ".join(question_batches[i:i+2])
         else:
-            ans_batches[i] = question_batches[i-1:i+2]
+            ans_batches[i] = " ".join(question_batches[i-1:i+2])
 
     r = {str(uuid.uuid4()): ans_batches}
     response = {
