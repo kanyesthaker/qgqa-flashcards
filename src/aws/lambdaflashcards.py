@@ -26,13 +26,13 @@ class LambdaFlashcards:
         r = []
 
         context=self.scraper.get_text(src)
-        print("Scraper OBJECT METHOD get_text EXITED SUCCESSFULLY")
+        # print("Scraper OBJECT METHOD get_text EXITED SUCCESSFULLY")
         batches=self._batch(context)
-        print("LambdaFlashcards OBJECT METHOD _batch EXITED SUCCESSFULLY")
+        # print("LambdaFlashcards OBJECT METHOD _batch EXITED SUCCESSFULLY")
 
         for i, batch in enumerate(batches):
             batch_questions=self.qg_model(batch)
-            print("QGSagemaker OBJECT METHOD __call__ EXITED SUCCESSFULLY")
+            # print("QGSagemaker OBJECT METHOD __call__ EXITED SUCCESSFULLY")
             for question in batch_questions:
                 if self._filter(question): continue
                 if i == 0:
@@ -40,14 +40,14 @@ class LambdaFlashcards:
                 else:
                     qa_context = " ".join(batches[i-1:i+2])
                 answer = self.qa_model(question, qa_context)
-                print("QASagemaker OBJECT METHOD __call__ EXITED SUCCESSFULLY")
+                # print("QASagemaker OBJECT METHOD __call__ EXITED SUCCESSFULLY")
                 ret = {
                     "question":question,
                     "answer":answer,
                     "context":qa_context
                 }
-                print(ret)
+                # print(ret)
                 r.append(ret)
-        print(r)
+        # print(r)
         return r
 

@@ -12,5 +12,5 @@ def generate(event, context):
 	print("LambdaFlashcards OBJECT INSTANTIATED")
 	questions = flashcards(src)
 	r = {str(uuid.uuid4()) : questions}
-
+	print(r)
 	return r
