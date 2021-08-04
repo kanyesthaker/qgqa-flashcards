@@ -6,4 +6,4 @@ if __name__=="__main__":
     params = {"src":src}
     encoded = urllib.parse.urlencode(params)
     api=f"https://cbczedlkid.execute-api.us-west-2.amazonaws.com/test/generate?{encoded}"
-    print(api)
+    print(requests.get(api))
