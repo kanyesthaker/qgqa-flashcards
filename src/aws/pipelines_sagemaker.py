@@ -18,11 +18,13 @@ class QGSagemaker:
             serializer=self.serializer,
             deserializer=self.deserializer
         )
+        print("QGSagemaker OBJECT SUCCESFULLY INITIALIZED")
 
     def __call__(self, context):
         payload = {"inputs":context}
         outs = self.predictor.predict(payload)
         questions = outs[0]['generated_text'].split("<sep>")[0].strip()
+        print("QGSagemaker OBJECT METHOD __call__ EXITED SUCCESSFULLY")
         return [questions]
 
 class QASagemaker:
@@ -36,6 +38,7 @@ class QASagemaker:
             serializer=self.serializer,
             deserializer=self.deserializer
         )
+        print("QASagemaker OBJECT SUCCESFULLY INITIALIZED")
 
     def __call__(self, question, context):
         payload = {
@@ -46,4 +49,5 @@ class QASagemaker:
         }
 
         answer = self.predictor.predict(payload)['answer']
+        print("QASagemaker OBJECT METHOD __call__ EXITED SUCCESSFULLY")
         return answer
