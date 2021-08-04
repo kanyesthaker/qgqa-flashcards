@@ -13,8 +13,13 @@ def generate(event, context):
 	questions = flashcards(src)
 	r = {str(uuid.uuid4()) : questions}
 	response = {
-        statusCode: 200,
-        body: json.dumps(r)
+		"isBase64Encoded":false,
+        "statusCode": 200,
+        "headers":{
+        	"Content-Type":"application/json",
+        	"Access-Control-Allow-Origin":"*",
+        },
+        "body": json.dumps(r)
     }
 
 	print(r)
