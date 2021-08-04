@@ -36,9 +36,9 @@ class LambdaFlashcards:
             for question in batch_questions:
                 if self._filter(question): continue
                 if i == 0:
-                    qa_context = ".".join([batches[i], batches[i+1]])
+                    qa_context = " ".join([batches[i], batches[i+1]])
                 else:
-                    qa_context = ".".join(batches[i-1:i+2])
+                    qa_context = " ".join(batches[i-1:i+2])
                 answer = self.qa_model(question, qa_context)
                 print("QASagemaker OBJECT METHOD __call__ EXITED SUCCESSFULLY")
                 ret = {

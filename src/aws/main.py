@@ -13,4 +13,4 @@ def generate(event, context):
 	questions = flashcards(src)
 	r = {str(uuid.uuid4()) : questions}
 
-	return json.loads(json.dumps(r))
+	return r
