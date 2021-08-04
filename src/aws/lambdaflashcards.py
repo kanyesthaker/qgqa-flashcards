@@ -41,11 +41,13 @@ class LambdaFlashcards:
                     qa_context = ".".join(batches[i-1:i+2])
                 answer = self.qa_model(question, qa_context)
                 print("QASagemaker OBJECT METHOD __call__ EXITED SUCCESSFULLY")
-                r.append({
+                ret = {
                     "question":question,
                     "answer":answer,
                     "context":qa_context
-                })
-        print(json.loads(json.dumps(r)))
+                }
+                print(ret)
+                r.append(ret)
+        # print(json.loads(json.dumps(r)))
         return json.loads(json.dumps(r))
 
