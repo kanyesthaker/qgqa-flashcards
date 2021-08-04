@@ -55,6 +55,7 @@ then
     aws lambda update-function-code --function-name "${NAME}" --zip-file fileb://function.zip
 fi
 rm ./function.zip
+rm numpy-*
 sudo rm -rf ./package
 
 cd ..
