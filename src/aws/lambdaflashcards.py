@@ -48,6 +48,6 @@ class LambdaFlashcards:
                 }
                 print(ret)
                 r.append(ret)
-        # print(json.loads(json.dumps(r)))
-        return json.loads(json.dumps(r))
+        print(r)
+        return r
 

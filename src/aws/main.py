@@ -9,4 +9,5 @@ def generate(event, context):
 	print(f"FUNCTION generate IN main.py CALLED WITH ARGUMENT {src}")
 	flashcards = LambdaFlashcards()
 	print("LambdaFlashcards OBJECT INSTANTIATED")
-	return flashcards(src)
+	ret = flashcards(src)
+	return json.loads(json.dumps(ret))
