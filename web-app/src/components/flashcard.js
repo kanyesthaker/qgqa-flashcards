@@ -3,6 +3,7 @@ import "./flashcard.css";
 import Check from "../icons/checkmark-sharp.svg";
 import Reload from "../icons/reload-sharp.svg";
 import styled, { css } from "styled-components";
+import Skeleton from "react-loading-skeleton";
 
 /**
  * Given a question, displays a flashcard
@@ -68,7 +69,7 @@ function Flashcard_container(props) {
     // <div className="Flashcard-answer-container" style={mystyle}>
     <FlashcardAnswerContainer opacity={props.opacity} absolute={props.absolute}>
       <FlashcardAnswer opacity={props.opacity} absolute={props.absolute}>
-        {props.answer}
+        {props.answer || <Skeleton />}
       </FlashcardAnswer>
 
       <FlashcardButtonsContainer
@@ -104,7 +105,9 @@ function Flashcard(props) {
 
   return (
     <div className="Flashcard-container">
-      <div className="Flashcard-question">{props.question}</div>
+      <div className="Flashcard-question">
+        {props.question || <Skeleton />}{" "}
+      </div>
 
       <div
         className="Flashcard-answer-hidden"

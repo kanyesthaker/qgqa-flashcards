@@ -8,6 +8,7 @@ import SampleData from "./data.js";
 import Check from "./icons/checkmark-sharp.svg";
 import Reload from "./icons/reload-sharp.svg";
 import axios from "axios";
+import Skeleton from "react-loading-skeleton";
 
 /**
  * FILE HEADER: This stateful flashcard-container does the following

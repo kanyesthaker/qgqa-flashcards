@@ -34,16 +34,27 @@ function highlightText() {
       var text_in_div = divs[i].innerText;
       console.log(text_in_div);
 
+      //This wa
+
       if (text_in_div != null && text_in_div.includes(match_string)) {
         console.log("Conditional ran");
+        //If we're not at the first div, then remove the last two highlighting
+        if (i > 2) {
+          //This is hacky for now
+          divs[0].style["background-color"] = "transparent"; //lets hope this works
+          divs[1].style["background-color"] = "transparent"; //lets hope this works
+          divs[i - 1].style["background-color"] = "transparent"; //lets hope this works
+          divs[i - 2].style["background-color"] = "transparent";
+        }
+
         divs[i].style["background-color"] = "rgba(255, 211, 125, 0.2)";
+        //Now, highight the next div
+        divs[i + 1].style["background-color"] = "rgba(255, 211, 125, 0.2)";
         divs[i].scrollIntoView({
           behavior: "smooth",
           block: "center",
           inline: "nearest",
         });
-        //Now, highight the next div
-        divs[i + 1].style["background-color"] = "rgba(255, 211, 125, 0.2)";
       }
     }
   });
