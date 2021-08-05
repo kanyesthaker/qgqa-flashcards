@@ -7,6 +7,7 @@ import Flashcard from "./components/flashcard";
 import SampleData from "./data.js";
 import Check from "./icons/checkmark-sharp.svg";
 import Reload from "./icons/reload-sharp.svg";
+import axios from "axios";
 
 /**
  * FILE HEADER: This stateful flashcard-container does the following
@@ -15,7 +16,7 @@ import Reload from "./icons/reload-sharp.svg";
  * 2. POSTs to endpoint to receive flashcards object
  * 3. Maintains an internal queue to keep track of which flashcard to display,
  * initialized in initFlashcards() and updated in handleClick()
- * 4. Persists this queue in chrome.storage.sync in order to have a user's position
+ * 4. Persists this queue in chrome.storage.local in order to have a user's position
  * in the queue persist whether extension is closed or opened.
  * @param question - a question string passed as prop to flashcard.js
  * @param answer - a answer string passed as prop to flashcard.js
@@ -28,7 +29,9 @@ import Reload from "./icons/reload-sharp.svg";
 
 function FlashcardContainer(props) {
   const [url, setUrl] = useState("");
-  const [data, setData] = useState([]);
+  const [chunks, setChunks] = useState([]);
+  const [QGQAObject, setQGQAObject] = useState([]);
+
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [key, setKey] = useState(1);
@@ -41,9 +44,9 @@ function FlashcardContainer(props) {
   function initFlashcards() {
     var processed_data = loaded_data["id"];
     var object_to_load = processed_data.shift();
-    chrome.storage.sync.set({ currObject: object_to_load });
+    chrome.storage.local.set({ currObject: object_to_load });
 
-    chrome.storage.sync.set({ currArray: processed_data }, function () {
+    chrome.storage.local.set({ currArray: processed_data }, function () {
       var curr_question = object_to_load.question;
       var curr_answer = object_to_load.answer;
       setQuestion(curr_question);
@@ -58,7 +61,7 @@ function FlashcardContainer(props) {
    **/
   function renderFlashcards() {
     //Note: we actually want to display the popped value, not what is left in the array
-    chrome.storage.sync.get(["currObject"], function (result) {
+    chrome.storage.local.get(["newCurrObject"], function (result) {
       var data = result.currObject;
       var curr_question = data.question;
       var curr_answer = data.answer;
@@ -67,41 +70,137 @@ function FlashcardContainer(props) {
     });
   }
 
-  useEffect(() => {
-    chrome.storage.sync.get(null, function (results) {
-      var keys = Object.keys(results);
-      if (keys.length == 0) {
-        initFlashcards();
-      } else {
-        renderFlashcards();
-      }
-    });
-  }, []);
+  function getNextChunkandFetch() {
+    //Get the next chunk from Chrome synced storage
+    chrome.storage.local.get(["storedChunks"], function (result) {
+      var data = result.storedChunks;
+      //Shift the first element of the array off
+      console.log("data");
+      console.log(data);
+      var currChunk = data.shift();
+      console.log("currChunk");
+      console.log(currChunk);
 
-  /**HOOK TO DETERMINE TABS + POST
-   **/
-  useEffect(() => {
+      //Store the current chunk in storage
+      //Call back here to get the first chunk
+      chrome.storage.local.set({ currChunk: currChunk }, function () {
+        fetchQGQAObject();
+      });
+
+      //Update the storedChunks queue
+      chrome.storage.local.set({ storedChunks: data });
+    });
+  }
+
+  function fetchChunks() {
     //Insert Chrome logic here to access current URL. Note that this runs on rerender,
     // and breaks during development, so only uncomment for prod
     //https://blog.usejournal.com/making-an-interactive-chrome-extension-with-react-524483d7aa5d
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab_url = tabs[0].url;
       setUrl(tab_url);
-    });
 
-    //Now, send an Axios POST request
-    // const endpoint_string = "";
-    // axios
-    //   .post(endpoint_string, {
-    //     url: { url },
-    //   })
-    //   .then(function (response) {
-    //     console.log(response);
-    //     setData(response);
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error);
-    //   });
+      //Now, send an Axios POST request to get all chunks given url
+      const ENDPOINT_STRING =
+        "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/segment-text";
+      axios
+        .post(ENDPOINT_STRING + `?src=${tab_url}`)
+        .then(function (response) {
+          var prop_to_access = Object.keys(response.data)[0];
+          var data = response.data[prop_to_access];
+          data = Object.values(data);
+
+          //Now, store chunks in Chrome synced storage to persist
+          chrome.storage.local.set({ storedChunks: data }, function (results) {
+            setChunks(results);
+            //And now make a call to get the first chunk
+            getNextChunkandFetch();
+          });
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    });
+  }
+
+  //Check if null
+  function checkIfNullHandler() {
+    chrome.storage.local.get(["newCurrObject"], function (result) {
+      var data = result.newCurrObject;
+      var question = data.question;
+      var answer = data.answer;
+      var context = data.context;
+
+      if (question == null) {
+        //get the next chunk and fetch object
+        getNextChunkandFetch();
+      } else {
+        //render the card
+        setQuestion(question);
+        setAnswer(answer);
+        setKey(key + 1);
+
+        // renderFlashcards();
+      }
+    });
+  }
+
+  function fetchQGQAObject() {
+    //Must pass in the next chunk-- time for chrome local storage!
+    //Now, get the nextChunk
+    chrome.storage.local.get(["currChunk"], function (result) {
+      var currChunk = result.currChunk;
+      console.log("this is currChunk in fetch");
+      console.log(currChunk);
+
+      const ENDPOINT_STRING =
+        "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/generate-single ";
+      axios
+        .post(ENDPOINT_STRING, {
+          ctx: currChunk,
+        })
+        .then(function (response) {
+          console.log("successfully got QA object");
+          console.log(response);
+          var data = response.data;
+          data = JSON.parse(data.body);
+          //Access values in the random ID string
+          var prop_to_access = Object.keys(data)[0];
+          var currObject = data[prop_to_access];
+          //Store this in storage
+          chrome.storage.local.set({ newCurrObject: currObject }, function (
+            results
+          ) {
+            //call our handler
+            checkIfNullHandler();
+          });
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    });
+  }
+
+  //Runs a single time upon load of component
+  useEffect(() => {
+    //Before initializing a flashcard, we must POST to get all chunks
+    //Pass a callback here
+    fetchChunks();
+    //Then post a chunk to get the first question
+
+    // chrome.storage.local.get(null, function (results) {
+    //   var keys = Object.keys(results);
+    //   if (keys.length == 0) {
+    //     initFlashcards();
+    //   } else {
+    //     renderFlashcards();
+    //   }
+    // });
+  }, []);
+
+  /**HOOK TO DETERMINE TABS + POST
+   **/
+  useEffect(() => {
     //This handles logic for changing to the next card
   });
 
@@ -113,29 +212,33 @@ function FlashcardContainer(props) {
    *
    **/
   function handleEventRemember() {
+    getNextChunkandFetch();
     //Get the current array stored in Chrome storage
-    chrome.storage.sync.get(["currArray"], function (results) {
-      var object_to_load = results.currArray.shift();
-      //Now set curr array equal to the popped value
-      //If there are no more entries to pop, do nothing
-      if (object_to_load != null) {
-        var updated_curr_array = results.currArray;
+    // chrome.storage.local.get(["currArray"], function (results) {
+    //   var object_to_load = results.currArray.shift();
+    //   //Now set curr array equal to the popped value
+    //   //If there are no more entries to pop, do nothing
+    //   if (object_to_load != null) {
+    //     var updated_curr_array = results.currArray;
 
-        //Now, store the popped value in local storage to show on rerender
-        chrome.storage.sync.set({ currObject: object_to_load });
-        chrome.storage.sync.set({ currArray: updated_curr_array }, function () {
-          //Query our local storage to get the most updated
-          var curr_question = object_to_load["question"];
-          var curr_answer = object_to_load["answer"];
-          setQuestion(curr_question);
-          setAnswer(curr_answer);
-          //Great hack here: to force a component dismount, we update keys of a flashcard manually
-          setKey(key + 1);
-        });
-      } else {
-        //Do nothing
-      }
-    });
+    //     //Now, store the popped value in local storage to show on rerender
+    //     chrome.storage.local.set({ currObject: object_to_load });
+    //     chrome.storage.local.set(
+    //       { currArray: updated_curr_array },
+    //       function () {
+    //         //Query our local storage to get the most updated
+    //         var curr_question = object_to_load["question"];
+    //         var curr_answer = object_to_load["answer"];
+    //         setQuestion(curr_question);
+    //         setAnswer(curr_answer);
+    //         //Great hack here: to force a component dismount, we update keys of a flashcard manually
+    //         setKey(key + 1);
+    //       }
+    //     );
+    //   } else {
+    //     //Do nothing
+    //   }
+    // });
   }
 
   /**handleEventForgot():
@@ -147,41 +250,43 @@ function FlashcardContainer(props) {
    *
    **/
   function handleEventForgot() {
+    getNextChunkandFetch();
+
     //Get the current object
-    chrome.storage.sync.get(["currObject"], function (result) {
-      var data = result.currObject;
+    // chrome.storage.local.get(["currObject"], function (result) {
+    //   var data = result.currObject;
 
-      //Get the current array stored in Chrome storage
-      chrome.storage.sync.get(["currArray"], function (results) {
-        //Push current object to the end of the results array
-        var len_push_to_array = results.currArray.push(data);
-        //Get the next value
-        var object_to_load = results.currArray.shift();
-        //Now set curr array equal to the popped value
+    //   //Get the current array stored in Chrome storage
+    //   chrome.storage.local.get(["currArray"], function (results) {
+    //     //Push current object to the end of the results array
+    //     var len_push_to_array = results.currArray.push(data);
+    //     //Get the next value
+    //     var object_to_load = results.currArray.shift();
+    //     //Now set curr array equal to the popped value
 
-        //If there are no more entries to pop, do nothing
-        if (object_to_load != null) {
-          var updated_curr_array = results.currArray;
+    //     //If there are no more entries to pop, do nothing
+    //     if (object_to_load != null) {
+    //       var updated_curr_array = results.currArray;
 
-          //Now, store the popped value in local storage to show on rerender
-          chrome.storage.sync.set({ currObject: object_to_load });
-          chrome.storage.sync.set(
-            { currArray: updated_curr_array },
-            function () {
-              //Query our local storage to get the most updated
-              var curr_question = object_to_load["question"];
-              var curr_answer = object_to_load["answer"];
-              setQuestion(curr_question);
-              setAnswer(curr_answer);
-              //Great hack here: to force a component dismount, we update keys of a flashcard manually
-              setKey(key + 1);
-            }
-          );
-        } else {
-          //Do nothing
-        }
-      });
-    });
+    //       //Now, store the popped value in local storage to show on rerender
+    //       chrome.storage.local.set({ currObject: object_to_load });
+    //       chrome.storage.local.set(
+    //         { currArray: updated_curr_array },
+    //         function () {
+    //           //Query our local storage to get the most updated
+    //           var curr_question = object_to_load["question"];
+    //           var curr_answer = object_to_load["answer"];
+    //           setQuestion(curr_question);
+    //           setAnswer(curr_answer);
+    //           //Great hack here: to force a component dismount, we update keys of a flashcard manually
+    //           setKey(key + 1);
+    //         }
+    //       );
+    //     } else {
+    //       //Do nothing
+    //     }
+    //   });
+    // });
   }
 
   return (

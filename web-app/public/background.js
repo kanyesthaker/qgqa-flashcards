@@ -1,15 +1,5 @@
 // background.js
 
-// try {
-//   console.log("start");
-//   chrome.commands.onCommand.addListener((command) => {
-//     console.log(`Command: ${command}`);
-//   });
-//   throw new Error("lol");
-//   console.log("end");
-// } catch (e) {
-//   console.error(e);
-// }
 
 console.log("start");
 chrome.commands.onCommand.addListener((command) => {
@@ -35,7 +25,6 @@ function highlightText() {
     var curr_context = data.context;
     //Heuristic: truncate the context to first 6 words
     var truncated_context = truncate(curr_context, 6);
-
     console.log(truncated_context);
 
     //Now, execute our div script
@@ -53,10 +42,9 @@ function highlightText() {
           block: "center",
           inline: "nearest",
         });
-
+        //Now, highight the next div
         divs[i + 1].style["background-color"] = "rgba(255, 211, 125, 0.2)";
 
-        //Now, highight the next div
       }
     }
   });
@@ -66,8 +54,6 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "sync" && changes.currObject?.newValue) {
     //inject the script
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const tab_url = tabs[0].url;
-      //does not contain id
       var tab_id = tabs[0].id;
       console.log(tab_id);
       //Execute the script
