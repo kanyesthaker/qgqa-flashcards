@@ -78,7 +78,7 @@ def generate_single(event, context):
     if not filter(question):
         payload = {
             "question": question,
-            "answer": qa_model(context),
+            "answer": qa_model(question, context),
             "context": context,
         }
     else:
