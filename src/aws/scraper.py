@@ -27,10 +27,3 @@ class Scraper:
         ret = " ".join(sentences)
         ret = re.sub(r'([A-Z][^ \.!?]+[\.!?])', '', ret)
         return ret
-
-def __main__():
-    url = "https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html#deriving-the-simplest-policy-gradient"
-    scraper = Scraper()
-    print(scraper.get_text(url))
-
-# __main__()

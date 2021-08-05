@@ -1,19 +1,8 @@
-import os
-import io
-import json
-import time
 import sagemaker
 from sagemaker.predictor import json_deserializer, Predictor
 from sagemaker.serializers import NumpySerializer, JSONSerializer
 from sagemaker.deserializers import JSONDeserializer
-import torch
-import fastT5
-from transformers import AutoTokenizer
-import transformers
 import time
-import os
-from scorer import Scorer
-from scraper import Scraper
 
 QA_NAME = "huggingface-pytorch-inference-2021-08-01-00-56-34-532"
 QG_NAME = "valhalla-t5-small-e2e-qg-20210802-2021-08-03-00-19-03-232"
@@ -29,11 +18,13 @@ class QGSagemaker:
             serializer=self.serializer,
             deserializer=self.deserializer
         )
+        print("QGSagemaker OBJECT SUCCESFULLY INITIALIZED")
 
     def __call__(self, context):
         payload = {"inputs":context}
         outs = self.predictor.predict(payload)
         questions = outs[0]['generated_text'].split("<sep>")[0].strip()
+        print("QGSagemaker OBJECT METHOD __call__ EXITED SUCCESSFULLY")
         return [questions]
 
 class QASagemaker:
@@ -47,6 +38,7 @@ class QASagemaker:
             serializer=self.serializer,
             deserializer=self.deserializer
         )
+        print("QASagemaker OBJECT SUCCESFULLY INITIALIZED")
 
     def __call__(self, question, context):
         payload = {
@@ -57,4 +49,5 @@ class QASagemaker:
         }
 
         answer = self.predictor.predict(payload)['answer']
+        print("QASagemaker OBJECT METHOD __call__ EXITED SUCCESSFULLY")
         return answer

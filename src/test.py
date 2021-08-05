@@ -1,32 +1,13 @@
-import os
-import io
-import boto3
+import requests
+import urllib
 import json
-import csv
-import time
-import sagemaker
-from sagemaker.predictor import json_serializer, json_deserializer, Predictor
-
-ENDPOINT_NAME = "huggingface-pytorch-inference-2021-08-01-00-56-34-532"
-QG_NAME = "huggingface-pytorch-inference-2021-08-01-02-08-36-571"
 
 if __name__=="__main__":
-    now = time.time()
-    payload = {"inputs": {
-                "question": "What is used for inference?",
-                "context": "My Name is Philipp and I live in Nuremberg. This model is used with sagemaker for inference."
-                }
-            }
-
-    predictor = Predictor(endpoint_name=ENDPOINT_NAME, sagemaker_session=sagemaker.Session(), serializer = json_serializer, content_type="text/csv", accept='application/json')
-    print(predictor.predict(payload))
-
-    qg_gen = Predictor(endpoint_name=ENDPOINT_NAME, sagemaker_session=sagemaker.Session(), seralizer=json_serializer, content_type="text/csv", accept='application/json')
-
-    args = {
-            "max_length": 2048, #256
-            "num_beams": 4,
-            "length_penalty": 0, #1.5
-            "no_repeat_ngram_size": 3,
-            "early_stopping": False, #True
-        }
+    src = "https://en.wikipedia.org/wiki/Ghoul"
+    params = {"src":src}
+    encoded = urllib.parse.urlencode(params)
+    headers = {'Accept': '*/*', 'Connection': 'keep-alive', 'User-Agent': 'Mozilla/5.0 (Windows NT 6.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.110 Safari/537.36', 'Accept-Language': 'en-US;q=0.5,en;q=0.3', 'Cache-Control': 'max-age=0', 'Upgrade-Insecure-Requests': '1'}
+    # api=f"https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/segment-text?{encoded}"
+    data = requests.post("https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/generate-single", headers = headers, data={"ctx":"Ghoul (Arabic: \u063a\u0648\u0644\u200e, gh\u016bl) is a demon-like being or monstrous humanoid originating in pre-Islamic Arabian religion,[1] associated with graveyards and consuming human flesh. In modern fiction, the term has often been used for a certain kind of undead monster. By extension, the word ghoul is also used in a derogatory sense to refer to a person who delights in the macabre or whose profession is linked directly to death, such as a gravedigger or graverobber. Ghoul is from the Arabic \u063a\u064f\u0648\u0644 gh\u016bl, from \u063a\u064e\u0627\u0644\u064e gh\u0101la, \"to seize\". In Arabic, the term is also sometimes used to describe a greedy or"})
+    # print(api)
+    print(json.dumps(data.json()))

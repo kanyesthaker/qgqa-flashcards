@@ -1,11 +1,12 @@
 from transformers import pipeline
 from pipelines_onnx import QGPipeline
-from pipelines_sagemaker import QGSagemaker, QASagemaker 
+from aws.pipelines_sagemaker import QGSagemaker, QASagemaker 
 from scorer import Scorer
-from scraper import Scraper
+from aws.scraper import Scraper
 from yaspin import yaspin
 from yaspin.spinners import Spinners
 import time
+import uuid
 
 class Flashcards:
     def __init__(
@@ -108,6 +109,5 @@ class Flashcards:
                         print("Correct!\n")
                     else:
                         print(f"Incorrect! Correct answer: {answer}\n")
-
 
         
