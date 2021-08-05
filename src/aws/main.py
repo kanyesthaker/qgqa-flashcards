@@ -2,6 +2,7 @@ import boto3
 import json
 from lambdaflashcards import LambdaFlashcards
 import urllib
+import time
 import uuid
 from scraper import Scraper
 from pipelines_sagemaker import QGSagemaker, QASagemaker
@@ -72,15 +73,21 @@ def generate_single(event, context):
     else:
         qg_context = " ".join(context_list[50:100])
 
+    now = time.time()
     qg_model = QGSagemaker()
     qa_model = QASagemaker()
+    print(f"Time to initialize models: {now-time.time()}s")
+    now = time.time()
     question = qg_model(qg_context)[0]
+    print(f"Time to generate question: {now-time.time()}s")
     if not filter(question):
+        now = time.time()
         payload = {
             "question": question,
             "answer": qa_model(question, context),
             "context": context,
         }
+        print(f"Time to generate answer: {now-time.time()}s")
     else:
         payload = {
             "question": None,
