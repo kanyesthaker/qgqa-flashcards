@@ -1,6 +1,5 @@
 // background.js
 
-
 console.log("start");
 chrome.commands.onCommand.addListener((command) => {
   console.log(`Command: ${command}`);
@@ -20,11 +19,12 @@ function highlightText() {
 
   //If extension changed
   //make a request to get the current value in storage
-  chrome.storage.sync.get(["currObject"], (results) => {
-    var data = results.currObject;
-    var curr_context = data.context;
+  //This was currObject
+  chrome.storage.local.get(["currChunk"], (results) => {
+    var data = results.currChunk;
+    // var curr_context = data.context;
     //Heuristic: truncate the context to first 6 words
-    var truncated_context = truncate(curr_context, 6);
+    var truncated_context = truncate(data, 6);
     console.log(truncated_context);
 
     //Now, execute our div script
@@ -44,16 +44,18 @@ function highlightText() {
         });
         //Now, highight the next div
         divs[i + 1].style["background-color"] = "rgba(255, 211, 125, 0.2)";
-
       }
     }
   });
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "sync" && changes.currObject?.newValue) {
+  if (area === "local" && changes.newCurrObject?.newValue) {
     //inject the script
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      console.log("tab in bg");
+      console.log(tabs);
+
       var tab_id = tabs[0].id;
       console.log(tab_id);
       //Execute the script
@@ -71,28 +73,3 @@ chrome.storage.onChanged.addListener((changes, area) => {
     });
   }
 });
-
-// console.log(divs);
-//   match_string =
-//     "Now that we’ve gone through the basics of RL terminology and notation, we can cover a little bit of the richer material: the landscape of algorithms in modern RL, and a description of the kinds of trade-offs that go into algorithm design.";
-// }
-
-//On listening to a change in local storage
-
-//then use the tabs API?
-//All we need here is is when user is on new tab
-// chrome.action.onClicked.addListener(function (tab) {
-//   // No tabs or host permissions needed!
-//   console.log(tab.id);
-//   chrome.scripting.executeScript(
-//     {
-//       target: { tabId: tab.id },
-//       function: highlightText,
-//       // files: ["content-script.js"],
-//     },
-//     (results) => {
-//       console.log("i ran");
-//       console.log(results);
-//     }
-//   );
-// });
