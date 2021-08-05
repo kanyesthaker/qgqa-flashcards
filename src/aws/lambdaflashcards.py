@@ -18,7 +18,7 @@ class LambdaFlashcards:
             not [question_word in question.lower() for question_word in ["what", "where", "how"]]
         )
 
-    def _batch(self, context, batch_size=30):
+    def _batch(self, context, batch_size=50):
         tokens = context.split()
         return [' '.join(tokens[i:i+batch_size]) for i in range(0, len(tokens), batch_size)]
 
