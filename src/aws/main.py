@@ -74,7 +74,7 @@ def generate_single(event, context):
 
     qg_model = QGSagemaker()
     qa_model = QASagemaker()
-    question = qg_model(qg_context)
+    question = qg_model(qg_context)[0]
     if not filter(question):
         payload = {
             "question": question,
