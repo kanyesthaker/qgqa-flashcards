@@ -66,11 +66,11 @@ def generate_single(event, context):
         )
 
     context = event["ctx"]
-    context=context.split(" ")
-    if len(context) <= 100:
-        qg_context = " ".join(context[:50])
+    context_list=context.split(" ")
+    if len(context_list) <= 100:
+        qg_context = " ".join(context_list[:50])
     else:
-        qg_context = " ".join(context[50:100])
+        qg_context = " ".join(context_list[50:100])
 
     qg_model = QGSagemaker()
     qa_model = QASagemaker()
