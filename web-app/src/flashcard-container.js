@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-
 import "./flashcard-container.css";
 import "./components/flashcard.css";
-
 import Flashcard from "./components/flashcard";
 import SampleData from "./data.js";
 import Check from "./icons/checkmark-sharp.svg";
@@ -38,67 +36,18 @@ function FlashcardContainer(props) {
   const [key, setKey] = useState(1);
   const loaded_data = SampleData;
 
-  /**INITFLASHCARD():
-   * Helper function that inits and renders the first flashcard on first open
-   * of a new tab
-   **/
-  // function initFlashcards() {
-  //   var processed_data = loaded_data["id"];
-  //   var object_to_load = processed_data.shift();
-  //   chrome.storage.local.set({ currObject: object_to_load });
-
-  //   chrome.storage.local.set({ currArray: processed_data }, function () {
-  //     var curr_question = object_to_load.question;
-  //     var curr_answer = object_to_load.answer;
-  //     setQuestion(curr_question);
-  //     setAnswer(curr_answer);
-  //   });
-  // }
-
-  /**RENDERFLASHCARDS():
-   * Helper function that gets the current flashcard object,
-   * and renders it
+  /**fetchChunks():
+   * Helper function that calls onClick of when the "Remember"
+   * button is clicked.  This gets the array we use as a queue,
+   * pops off the next value, and if this value is not NULL (signififying no more flash cards)
+   * We update React state and Chrome.storage
    *
    **/
-  // function renderFlashcards() {
-  //   //Note: we actually want to display the popped value, not what is left in the array
-  //   chrome.storage.local.get(["newCurrObject"], function (result) {
-  //     var data = result.currObject;
-  //     var curr_question = data.question;
-  //     var curr_answer = data.answer;
-  //     setQuestion(curr_question);
-  //     setAnswer(curr_answer);
-  //   });
-  // }
-
-  // function getNextChunkandFetch() {
-  //   //Get the next chunk from Chrome synced storage
-  //   chrome.storage.local.get(["storedChunks"], function (result) {
-  //     var data = result.storedChunks;
-  //     //Shift the first element of the array off
-  //     console.log("data");
-  //     console.log(data);
-  //     var currChunk = data.shift();
-  //     console.log("currChunk");
-  //     console.log(currChunk);
-
-  //     //Store the current chunk in storage
-  //     //Call back here to get the first chunk
-  //     chrome.storage.local.set({ currChunk: currChunk }, function () {
-  //       fetchQGQAObject();
-  //     });
-
-  //     //Update the storedChunks queue
-  //     chrome.storage.local.set({ storedChunks: data });
-  //   });
-  // }
-
   function fetchChunks() {
     //Insert Chrome logic here to access current URL. Note that this runs on rerender,
     // and breaks during development, so only uncomment for prod
     //https://blog.usejournal.com/making-an-interactive-chrome-extension-with-react-524483d7aa5d
 
-    //test
     chrome.storage.local.get(["allChunks"], function (result) {
       var result = result.allChunks;
       console.log("this is from content script in front end");
@@ -114,72 +63,77 @@ function FlashcardContainer(props) {
     // callback();
   }
 
+  /**fetchChunks():
+   * Helper function that calls onClick of when the "Remember"
+   * @param currChunk
+   **/
   function checkifNull(currChunk) {
     var question = currChunk.question;
-    if (question == null) {
-      return true;
-    } else {
-      return false;
-    }
+    return question == null ? true : false;
   }
 
-  // async function updateBatchSize() {
-  //   fetchQGQAObject();
-  // }
-
-  //If there's still values in currObjects, render from there
-  //Otherwise make another batch request
+  /**renderBatchHandler():
+   * Helper function that calls onClick of when the "Remember"
+   **/
   function renderBatchHandler() {
     console.log("render batch ran");
     //Used to be newCurrObject
-    chrome.storage.local.get(["currObjects"], function (result) {
-      var data = result.currObjects;
-      console.log("this is data in render");
-      console.log(data);
-      console.log(result);
+    chrome.storage.local.get(["currObjects"], function (co_result) {
+      //Get the IDX
+      chrome.storage.local.get(["idx"], function (i_result) {
+        var data = co_result.currObjects;
+        var idx = i_result.currObjects;
 
-      //Case one: check length of temporary_queue, if there's values left, then take from it!
-      // if (data.length > 1) {
-      //Execute checkIfNullHandler until the function evaluates to true,
-      //At which point it stops
-      while (true) {
-        var currChunk = data.shift();
-        var isNull = checkifNull(currChunk);
-        if (isNull == false) {
-          break;
+        console.log("this is data in render");
+        console.log(data);
+        console.log(result);
+
+        //Case one: check length of temporary_queue, if there's values left, then take from it!
+        // if (data.length > 1) {
+        //Execute checkIfNullHandler until the function evaluates to true,
+        //At which point it stops
+        while (true) {
+          var currChunk = data.shift();
+          var isNull = checkifNull(currChunk);
+          if (isNull == false) {
+            break;
+          }
         }
-      }
-      //Create notion of batch_len filtered from nulls
-      var batch_len = data.length;
+        //Create notion of batch_len filtered from nulls
+        var batch_len = data.length;
+        var context = currChunk.context;
+        var question = currChunk.question;
+        var answer = currChunk.answer;
 
-      var context = currChunk.context;
-      console.log("this is context in render");
-      console.log(context);
-      var question = currChunk.question;
-      var answer = currChunk.answer;
+        //Set currObjects to its new size
+        chrome.storage.local.set({ currObjects: data }, function (results) {});
+        setQuestion(question);
+        setAnswer(answer);
+        setKey(key + 1);
 
-      //Set currObjects to its new size
-      chrome.storage.local.set({ currObjects: data }, function (results) {});
-      setQuestion(question);
-      setAnswer(answer);
-      setKey(key + 1);
-      var ifRender = false;
-      fetchBatchQGQAObjects(ifRender);
+        //If idx is 0 or divisible by 4, then render next batch
+        var ifRender = false;
+        fetchBatchQGQAObjects(ifRender);
 
-      //async start next req if size of data is sufficiently large
-      // updateBatchSize();
-      // }
-      // else if (data.length <= 1) {
-      //   console.log("to implement!");
-      //   //make new request to batch if size of
-      //   fetchBatchQGQAObjects();
-      // }
-      // else{
+        //async start next req if size of data is sufficiently large
+        // updateBatchSize();
+        // }
+        // else if (data.length <= 1) {
+        //   console.log("to implement!");
+        //   //make new request to batch if size of
+        //   fetchBatchQGQAObjects();
+        // }
+        // else{
 
-      // }
+        // }
+      });
     });
   }
 
+  /**readResponse():
+   * Helper function that calls onClick of when the "Remember"
+   * @param response
+   **/
   function readResponse(response) {
     var data = response.data;
     data = JSON.parse(data.body);
@@ -189,6 +143,9 @@ function FlashcardContainer(props) {
     return currObject;
   }
 
+  /**renderBatchHandler():
+   * Helper function that calls onClick of when the "Remember"
+   **/
   function fetchBatchQGQAObjects(ifRender) {
     //Must pass in the next chunk-- time for chrome local storage!
     //Now, get the nextChunk
@@ -295,24 +252,9 @@ function FlashcardContainer(props) {
 
   //Runs a single time upon load of component
   useEffect(() => {
-    //Before initializing a flashcard, we must POST to get all chunks
-    //Pass a callback here
-    // fetchChunks().then(() => renderBatchHandler());
     fetchChunks();
     var ifRender = true;
     fetchBatchQGQAObjects(ifRender);
-
-    //Then post a chunk to get the first question
-    //Then call render
-
-    // chrome.storage.local.get(null, function (results) {
-    //   var keys = Object.keys(results);
-    //   if (keys.length == 0) {
-    //     initFlashcards();
-    //   } else {
-    //     renderFlashcards();
-    //   }
-    // });
   }, []);
 
   /**HOOK TO DETERMINE TABS + POST
@@ -417,8 +359,6 @@ function FlashcardContainer(props) {
         onRemembered={handleEventRemember}
         onForgot={handleEventForgot}
       ></Flashcard>
-
-      {/* <div>This is URL {url}</div> */}
     </div>
   );
 }
