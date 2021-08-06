@@ -97,31 +97,43 @@ function FlashcardContainer(props) {
     //Insert Chrome logic here to access current URL. Note that this runs on rerender,
     // and breaks during development, so only uncomment for prod
     //https://blog.usejournal.com/making-an-interactive-chrome-extension-with-react-524483d7aa5d
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      const tab_url = tabs[0].url;
-      setUrl(tab_url);
 
-      //Now, send an Axios POST request to get all chunks given url
-      const ENDPOINT_STRING =
-        "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/segment-text";
-      axios
-        .post(ENDPOINT_STRING + `?src=${tab_url}`)
-        .then(function (response) {
-          var prop_to_access = Object.keys(response.data)[0];
-          var data = response.data[prop_to_access];
-          data = Object.values(data);
-
-          //Now, store chunks in Chrome synced storage to persist
-          chrome.storage.local.set({ storedChunks: data }, function (results) {
-            setChunks(results);
-            //And now make a call to get the first chunk
-            getNextChunkandFetch();
-          });
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+    //test
+    chrome.storage.local.get(["allChunks"], function (result) {
+      var result = result.allChunks;
+      console.log("this is from contente script in front end");
+      console.log(result);
+      chrome.storage.local.set({ storedChunks: result }, function (results) {
+        setChunks(results);
+        //And now make a call to get the first chunk
+        getNextChunkandFetch();
+      });
     });
+    // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    //   const tab_url = tabs[0].url;
+    //   setUrl(tab_url);
+
+    //   //Now, send an Axios POST request to get all chunks given url
+    //   const ENDPOINT_STRING =
+    //     "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/segment-text";
+    //   axios
+    //     .post(ENDPOINT_STRING + `?src=${tab_url}`)
+    //     .then(function (response) {
+    //       var prop_to_access = Object.keys(response.data)[0];
+    //       var data = response.data[prop_to_access];
+    //       data = Object.values(data);
+
+    //       //Now, store chunks in Chrome synced storage to persist
+    //       chrome.storage.local.set({ storedChunks: data }, function (results) {
+    //         setChunks(results);
+    //         //And now make a call to get the first chunk
+    //         getNextChunkandFetch();
+    //       });
+    //     })
+    //     .catch(function (error) {
+    //       console.log(error);
+    //     });
+    // });
   }
 
   //Check if null

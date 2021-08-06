@@ -9,6 +9,43 @@ chrome.commands.onCommand.addListener((command) => {
 //   chrome.tabs.executeScript(null, { file: "popup.html" });
 // });
 
+function getAllChunks() {
+  //Test being able to access values stored in local storage
+  const divs = [...document.querySelectorAll("p")];
+  var arr_of_divs = [];
+  for (var i = 0; i < divs.length - 1; ++i) {
+    var text_in_div = divs[i].innerText;
+    arr_of_divs.push(text_in_div);
+  }
+
+  console.log("this is divs in function");
+  console.log(arr_of_divs);
+
+  chrome.storage.local.set({ allChunks: arr_of_divs }, function (results) {
+    //call our handler
+    // checkIfNullHandler();
+  });
+}
+
+chrome.tabs.onActivated.addListener(function (info) {
+  //get cur tab
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    var tab_id = tabs[0].id;
+    console.log("tab id in get all chunks");
+    console.log(tab_id);
+    chrome.scripting.executeScript(
+      {
+        target: { tabId: tab_id },
+        function: getAllChunks,
+        // files: ["content-script.js"],
+      },
+      (results) => {
+        console.log(results);
+      }
+    );
+  });
+});
+
 function highlightText() {
   function truncate(str, nu_words) {
     return str.split(" ").splice(0, nu_words).join(" ");
