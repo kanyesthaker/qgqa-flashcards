@@ -42,56 +42,56 @@ function FlashcardContainer(props) {
    * Helper function that inits and renders the first flashcard on first open
    * of a new tab
    **/
-  function initFlashcards() {
-    var processed_data = loaded_data["id"];
-    var object_to_load = processed_data.shift();
-    chrome.storage.local.set({ currObject: object_to_load });
+  // function initFlashcards() {
+  //   var processed_data = loaded_data["id"];
+  //   var object_to_load = processed_data.shift();
+  //   chrome.storage.local.set({ currObject: object_to_load });
 
-    chrome.storage.local.set({ currArray: processed_data }, function () {
-      var curr_question = object_to_load.question;
-      var curr_answer = object_to_load.answer;
-      setQuestion(curr_question);
-      setAnswer(curr_answer);
-    });
-  }
+  //   chrome.storage.local.set({ currArray: processed_data }, function () {
+  //     var curr_question = object_to_load.question;
+  //     var curr_answer = object_to_load.answer;
+  //     setQuestion(curr_question);
+  //     setAnswer(curr_answer);
+  //   });
+  // }
 
   /**RENDERFLASHCARDS():
    * Helper function that gets the current flashcard object,
    * and renders it
    *
    **/
-  function renderFlashcards() {
-    //Note: we actually want to display the popped value, not what is left in the array
-    chrome.storage.local.get(["newCurrObject"], function (result) {
-      var data = result.currObject;
-      var curr_question = data.question;
-      var curr_answer = data.answer;
-      setQuestion(curr_question);
-      setAnswer(curr_answer);
-    });
-  }
+  // function renderFlashcards() {
+  //   //Note: we actually want to display the popped value, not what is left in the array
+  //   chrome.storage.local.get(["newCurrObject"], function (result) {
+  //     var data = result.currObject;
+  //     var curr_question = data.question;
+  //     var curr_answer = data.answer;
+  //     setQuestion(curr_question);
+  //     setAnswer(curr_answer);
+  //   });
+  // }
 
-  function getNextChunkandFetch() {
-    //Get the next chunk from Chrome synced storage
-    chrome.storage.local.get(["storedChunks"], function (result) {
-      var data = result.storedChunks;
-      //Shift the first element of the array off
-      console.log("data");
-      console.log(data);
-      var currChunk = data.shift();
-      console.log("currChunk");
-      console.log(currChunk);
+  // function getNextChunkandFetch() {
+  //   //Get the next chunk from Chrome synced storage
+  //   chrome.storage.local.get(["storedChunks"], function (result) {
+  //     var data = result.storedChunks;
+  //     //Shift the first element of the array off
+  //     console.log("data");
+  //     console.log(data);
+  //     var currChunk = data.shift();
+  //     console.log("currChunk");
+  //     console.log(currChunk);
 
-      //Store the current chunk in storage
-      //Call back here to get the first chunk
-      chrome.storage.local.set({ currChunk: currChunk }, function () {
-        fetchQGQAObject();
-      });
+  //     //Store the current chunk in storage
+  //     //Call back here to get the first chunk
+  //     chrome.storage.local.set({ currChunk: currChunk }, function () {
+  //       fetchQGQAObject();
+  //     });
 
-      //Update the storedChunks queue
-      chrome.storage.local.set({ storedChunks: data });
-    });
-  }
+  //     //Update the storedChunks queue
+  //     chrome.storage.local.set({ storedChunks: data });
+  //   });
+  // }
 
   function fetchChunks() {
     //Insert Chrome logic here to access current URL. Note that this runs on rerender,
@@ -101,105 +101,209 @@ function FlashcardContainer(props) {
     //test
     chrome.storage.local.get(["allChunks"], function (result) {
       var result = result.allChunks;
-      console.log("this is from contente script in front end");
+      console.log("this is from content script in front end");
       console.log(result);
       chrome.storage.local.set({ storedChunks: result }, function (results) {
         setChunks(results);
         //And now make a call to get the first chunk
-        getNextChunkandFetch();
+        // getNextChunkandFetch();
+        // fetchBatchQGQAObjects();
       });
     });
-    // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    //   const tab_url = tabs[0].url;
-    //   setUrl(tab_url);
 
-    //   //Now, send an Axios POST request to get all chunks given url
-    //   const ENDPOINT_STRING =
-    //     "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/segment-text";
-    //   axios
-    //     .post(ENDPOINT_STRING + `?src=${tab_url}`)
-    //     .then(function (response) {
-    //       var prop_to_access = Object.keys(response.data)[0];
-    //       var data = response.data[prop_to_access];
-    //       data = Object.values(data);
-
-    //       //Now, store chunks in Chrome synced storage to persist
-    //       chrome.storage.local.set({ storedChunks: data }, function (results) {
-    //         setChunks(results);
-    //         //And now make a call to get the first chunk
-    //         getNextChunkandFetch();
-    //       });
-    //     })
-    //     .catch(function (error) {
-    //       console.log(error);
-    //     });
-    // });
+    // callback();
   }
 
-  //Check if null
-  function checkIfNullHandler() {
-    chrome.storage.local.get(["newCurrObject"], function (result) {
-      var data = result.newCurrObject;
-      var question = data.question;
-      var answer = data.answer;
-      var context = data.context;
+  function checkifNull(currChunk) {
+    var question = currChunk.question;
+    if (question == null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
-      if (question == null) {
-        //get the next chunk and fetch object
-        getNextChunkandFetch();
-      } else {
-        //render the card
-        setQuestion(question);
-        setAnswer(answer);
-        setKey(key + 1);
+  // async function updateBatchSize() {
+  //   fetchQGQAObject();
+  // }
 
-        // renderFlashcards();
+  //If there's still values in currObjects, render from there
+  //Otherwise make another batch request
+  function renderBatchHandler() {
+    console.log("render batch ran");
+    //Used to be newCurrObject
+    chrome.storage.local.get(["currObjects"], function (result) {
+      var data = result.currObjects;
+      console.log("this is data in render");
+      console.log(data);
+      console.log(result);
+
+      //Case one: check length of temporary_queue, if there's values left, then take from it!
+      // if (data.length > 1) {
+      //Execute checkIfNullHandler until the function evaluates to true,
+      //At which point it stops
+      while (true) {
+        var currChunk = data.shift();
+        var isNull = checkifNull(currChunk);
+        if (isNull == false) {
+          break;
+        }
       }
+      //Create notion of batch_len filtered from nulls
+      var batch_len = data.length;
+
+      var context = currChunk.context;
+      console.log("this is context in render");
+      console.log(context);
+      var question = currChunk.question;
+      var answer = currChunk.answer;
+
+      //Set currObjects to its new size
+      chrome.storage.local.set({ currObjects: data }, function (results) {});
+      setQuestion(question);
+      setAnswer(answer);
+      setKey(key + 1);
+      var ifRender = false;
+      fetchBatchQGQAObjects(ifRender);
+
+      //async start next req if size of data is sufficiently large
+      // updateBatchSize();
+      // }
+      // else if (data.length <= 1) {
+      //   console.log("to implement!");
+      //   //make new request to batch if size of
+      //   fetchBatchQGQAObjects();
+      // }
+      // else{
+
+      // }
+    });
+  }
+
+  function readResponse(response) {
+    var data = response.data;
+    data = JSON.parse(data.body);
+    //Access values in the random ID string
+    var prop_to_access = Object.keys(data)[0];
+    var currObject = data[prop_to_access];
+    return currObject;
+  }
+
+  function fetchBatchQGQAObjects(ifRender) {
+    //Must pass in the next chunk-- time for chrome local storage!
+    //Now, get the nextChunk
+    chrome.storage.local.get(["allChunks"], function (result) {
+      //This is an array of text
+      var allChunks = result.allChunks;
+      var chunksLen = allChunks.length;
+
+      chrome.storage.local.get(["idx"], function (result) {
+        var idx = result.idx;
+        //Get the next 4 chunks
+        var batchChunks = allChunks.slice(idx, idx + 4);
+        var currChunk1 = batchChunks[0];
+        var currChunk2 = batchChunks[1];
+        var currChunk3 = batchChunks[2];
+        var currChunk4 = batchChunks[3];
+        console.log("this is allChunks in fetch many");
+        console.log(allChunks);
+
+        //Update our IDX
+        chrome.storage.local.set({ idx: idx + 4 }, function (results) {});
+
+        const ENDPOINT_STRING =
+          "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/generate-single ";
+        axios
+          .all([
+            axios.post(ENDPOINT_STRING, { ctx: currChunk1 }),
+            axios.post(ENDPOINT_STRING, { ctx: currChunk2 }),
+            axios.post(ENDPOINT_STRING, { ctx: currChunk3 }),
+            axios.post(ENDPOINT_STRING, { ctx: currChunk4 }),
+          ])
+          .then(
+            axios.spread(function (
+              chunk1Resp,
+              chunk2Resp,
+              chunk3Resp,
+              chunk4Resp
+            ) {
+              // do something
+              var responses = [chunk1Resp, chunk2Resp, chunk3Resp, chunk4Resp];
+              var currBatch = [];
+              for (var response of responses) {
+                var currObject = readResponse(response);
+                console.log("in batch this is an object returned");
+                console.log(currObject);
+                // console.log("in batch this is currBatch");
+                // console.log(currBatch);
+
+                currBatch.push(currObject);
+              }
+
+              //Now, save our next 4 objects to local storage
+              //UPDATE: append these values to our currObjects array
+              chrome.storage.local.get(["currObjects"], function (result) {
+                var allObjects = result.currObjects;
+                //now append our new batch to this queue
+                // var allObjects = [];
+                for (var curr of currBatch) {
+                  allObjects.push(curr);
+                }
+                console.log("this is current all objects");
+                console.log(allObjects);
+                chrome.storage.local.set({ currObjects: allObjects }, function (
+                  results
+                ) {
+                  if (ifRender == true) {
+                    renderBatchHandler();
+                  }
+                });
+              });
+            })
+          );
+      });
     });
   }
 
   function fetchQGQAObject() {
-    //Must pass in the next chunk-- time for chrome local storage!
-    //Now, get the nextChunk
-    chrome.storage.local.get(["currChunk"], function (result) {
-      var currChunk = result.currChunk;
-      console.log("this is currChunk in fetch");
-      console.log(currChunk);
+    console.log("new");
 
-      const ENDPOINT_STRING =
-        "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/generate-single ";
-      axios
-        .post(ENDPOINT_STRING, {
-          ctx: currChunk,
-        })
-        .then(function (response) {
-          console.log("successfully got QA object");
-          console.log(response);
-          var data = response.data;
-          data = JSON.parse(data.body);
-          //Access values in the random ID string
-          var prop_to_access = Object.keys(data)[0];
-          var currObject = data[prop_to_access];
-          //Store this in storage
-          chrome.storage.local.set({ newCurrObject: currObject }, function (
-            results
-          ) {
-            //call our handler
-            checkIfNullHandler();
-          });
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-    });
+    // axios
+    //   .post(ENDPOINT_STRING, {
+    //     ctx: currChunk,
+    //   })
+    //   .then(function (response) {
+    //     console.log("successfully got QA object");
+    //     console.log(response);
+    //     var data = response.data;
+    //     data = JSON.parse(data.body);
+    //     //Access values in the random ID string
+    //     var prop_to_access = Object.keys(data)[0];
+    //     var currObject = data[prop_to_access];
+    //     //Store this in storage
+    //     chrome.storage.local.set({ newCurrObject: currObject }, function (
+    //       results
+    //     ) {
+    //       //call our handler
+    //       checkIfNullHandler();
+    //     });
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error);
+    //   });
   }
 
   //Runs a single time upon load of component
   useEffect(() => {
     //Before initializing a flashcard, we must POST to get all chunks
     //Pass a callback here
+    // fetchChunks().then(() => renderBatchHandler());
     fetchChunks();
+    var ifRender = true;
+    fetchBatchQGQAObjects(ifRender);
+
     //Then post a chunk to get the first question
+    //Then call render
 
     // chrome.storage.local.get(null, function (results) {
     //   var keys = Object.keys(results);
@@ -225,7 +329,8 @@ function FlashcardContainer(props) {
    *
    **/
   function handleEventRemember() {
-    getNextChunkandFetch();
+    // getNextChunkandFetch();
+    renderBatchHandler();
     //Get the current array stored in Chrome storage
     // chrome.storage.local.get(["currArray"], function (results) {
     //   var object_to_load = results.currArray.shift();
@@ -263,7 +368,8 @@ function FlashcardContainer(props) {
    *
    **/
   function handleEventForgot() {
-    getNextChunkandFetch();
+    // getNextChunkandFetch();
+    renderBatchHandler();
 
     //Get the current object
     // chrome.storage.local.get(["currObject"], function (result) {

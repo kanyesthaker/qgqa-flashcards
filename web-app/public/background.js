@@ -12,6 +12,7 @@ chrome.commands.onCommand.addListener((command) => {
 function getAllChunks() {
   //Test being able to access values stored in local storage
   const divs = [...document.querySelectorAll("p")];
+  //Perform some preprocessing here
   var arr_of_divs = [];
   for (var i = 0; i < divs.length - 1; ++i) {
     var text_in_div = divs[i].innerText;
@@ -25,6 +26,10 @@ function getAllChunks() {
     //call our handler
     // checkIfNullHandler();
   });
+
+  chrome.storage.local.set({ idx: 0 }, function (results) {});
+  //Initialize currObjects to none here:
+  chrome.storage.local.set({ currObjects: [] }, function (results) {});
 }
 
 chrome.tabs.onActivated.addListener(function (info) {
