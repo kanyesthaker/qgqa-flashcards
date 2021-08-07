@@ -1,18 +1,34 @@
 // background.js
-console.log("start");
 chrome.commands.onCommand.addListener((command) => {
   console.log(`Command: ${command}`);
 });
 
 function getAllChunks() {
-  //Test being able to access values stored in local storage
   const divs = [...document.querySelectorAll("p")];
-  //Perform some preprocessing here
+
+  //Helper function to process a selected chunk
+  function preprocess_chunk(text_in_div) {
+    //Replace all with {} [] <>
+    var pat = /(\{.*?\})|(\[.*?\])|(<.*?>)/g;
+    ret = text_in_div.replaceAll(pat, "");
+    return ret;
+  }
+
+  //Helper function to determine if should discard a chunk
+  function shouldBeIncluded(text_in_div) {
+    //If contains any strings w more than one word that start w/ a capital letter and end with punctuation, keep it
+    var pat = /^[A-Z].+ .+[\.|!|?]/;
+    var bool = pat.test(text_in_div);
+    return bool;
+  }
 
   var arr_of_divs = [];
   for (var i = 0; i < divs.length - 1; ++i) {
     var text_in_div = divs[i].innerText;
-    arr_of_divs.push(text_in_div);
+    if (shouldBeIncluded(text_in_div)) {
+      processed_chunk = preprocess_chunk(text_in_div);
+      arr_of_divs.push(processed_chunk);
+    }
   }
 
   chrome.storage.local.set({ allChunks: arr_of_divs }, function (results) {});
@@ -20,6 +36,7 @@ function getAllChunks() {
   chrome.storage.local.set({ currObjects: [] }, function (results) {});
 }
 
+//Listener function to determine if should discard a chunk
 chrome.tabs.onActivated.addListener(function (info) {
   //get cur tab
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -42,19 +59,16 @@ function highlightText() {
   function truncate(str, nu_words) {
     return str.split(" ").splice(0, nu_words).join(" ");
   }
-  console.log("File ran");
   // Watch for changes to the user's options & apply them
   const divs = [...document.querySelectorAll("p")];
 
   //If extension changed
   //make a request to get the current value in storage
-  //This was currObject
   chrome.storage.local.get(["storedCurrChunk"], (results) => {
     var data = results.storedCurrChunk;
     var context = data.context;
     //Heuristic: truncate the context to first 6 words
     //This returns a chunk, so get its context
-
     var truncated_context = truncate(context, 6);
     console.log(truncated_context);
 
@@ -76,7 +90,6 @@ function highlightText() {
         }
 
         divs[i].style["background-color"] = "rgba(255, 211, 125, 0.2)";
-        //Now, highight the next div
         divs[i + 1].style["background-color"] = "rgba(255, 211, 125, 0.2)";
         divs[i].scrollIntoView({
           behavior: "smooth",
