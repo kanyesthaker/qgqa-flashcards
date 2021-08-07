@@ -169,8 +169,6 @@ function FlashcardContainer(props) {
         var currChunk2 = batchChunks[1];
         var currChunk3 = batchChunks[2];
         var currChunk4 = batchChunks[3];
-        console.log("this is allChunks in fetch many");
-        console.log(allChunks);
 
         //Update our IDX
         chrome.storage.local.set({ idx: idx + 4 }, function (results) {});

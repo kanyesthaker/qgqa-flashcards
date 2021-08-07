@@ -4,6 +4,8 @@ chrome.commands.onCommand.addListener((command) => {
 });
 
 function getAllChunks() {
+  console.time("answer time");
+
   const divs = [...document.querySelectorAll("p")];
 
   //Helper function to process a selected chunk
@@ -31,9 +33,21 @@ function getAllChunks() {
     }
   }
 
-  chrome.storage.local.set({ allChunks: arr_of_divs }, function (results) {});
+  //-2 to generate chunks of size 3 each
+  var arr_of_answer_chunks = [];
+
+  for (var i = 0; i < arr_of_divs.length - 2; ++i) {
+    var chunks = [arr_of_divs[i], arr_of_divs[i + 1], arr_of_divs[i + 2]];
+    var answerChunk = chunks.join(" ");
+    arr_of_answer_chunks.push(answerChunk);
+  }
+
+  chrome.storage.local.set({ allChunks: arr_of_answer_chunks }, function (
+    results
+  ) {});
   chrome.storage.local.set({ idx: 0 }, function (results) {});
   chrome.storage.local.set({ currObjects: [] }, function (results) {});
+  console.timeEnd("answer time");
 }
 
 //Listener function to determine if should discard a chunk
