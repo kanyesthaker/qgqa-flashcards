@@ -86,7 +86,7 @@ function FlashcardContainer(props) {
 
         console.log("this is data in render");
         console.log(data);
-        console.log(result);
+        // console.log(result);
 
         //Case one: check length of temporary_queue, if there's values left, then take from it!
         // if (data.length > 1) {
@@ -107,13 +107,20 @@ function FlashcardContainer(props) {
 
         //Set currObjects to its new size
         chrome.storage.local.set({ currObjects: data }, function (results) {});
-        setQuestion(question);
-        setAnswer(answer);
-        setKey(key + 1);
+        //Update currChunk so that we can highlight, this triggers our opportunity to highlight
+        console.log("this is currChunk in fcj");
+        console.log(currChunk);
+        chrome.storage.local.set({ storedCurrChunk: currChunk }, function (
+          results
+        ) {
+          setQuestion(question);
+          setAnswer(answer);
+          setKey(key + 1);
 
-        //If idx is 0 or divisible by 4, then render next batch
-        var ifRender = false;
-        fetchBatchQGQAObjects(ifRender);
+          //If idx is 0 or divisible by 4, then render next batch
+          var ifRender = false;
+          fetchBatchQGQAObjects(ifRender);
+        });
 
         //async start next req if size of data is sufficiently large
         // updateBatchSize();

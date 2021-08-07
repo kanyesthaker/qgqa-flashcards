@@ -8,6 +8,7 @@ function getAllChunks() {
   //Test being able to access values stored in local storage
   const divs = [...document.querySelectorAll("p")];
   //Perform some preprocessing here
+
   var arr_of_divs = [];
   for (var i = 0; i < divs.length - 1; ++i) {
     var text_in_div = divs[i].innerText;
@@ -48,10 +49,13 @@ function highlightText() {
   //If extension changed
   //make a request to get the current value in storage
   //This was currObject
-  chrome.storage.local.get(["currChunk"], (results) => {
-    var data = results.currChunk;
+  chrome.storage.local.get(["storedCurrChunk"], (results) => {
+    var data = results.storedCurrChunk;
+    var context = data.context;
     //Heuristic: truncate the context to first 6 words
-    var truncated_context = truncate(data, 6);
+    //This returns a chunk, so get its context
+
+    var truncated_context = truncate(context, 6);
     console.log(truncated_context);
 
     //Now, execute our div script
@@ -85,7 +89,7 @@ function highlightText() {
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.newCurrObject?.newValue) {
+  if (area === "local" && changes.storedCurrChunk?.newValue) {
     //inject the script
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       console.log("tab in bg");
