@@ -22,12 +22,6 @@ case $key in
     shift
     shift
     ;;
-	# -p|--permission)
-	# PERM="$2"
-	# PERM="${PERM:-default}"
-	# shift
-	# shift
-	# ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift # past argument
