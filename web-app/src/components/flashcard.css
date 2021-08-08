@@ -73,7 +73,7 @@
   display: flex;
   flex-direction: row;
 
-  cursor: pointer;
+  /* cursor: pointer; */
 }
 
 .Flashcard-button-icon {

@@ -28,111 +28,100 @@ import Skeleton from "react-loading-skeleton";
 
 function FlashcardContainer(props) {
   const [url, setUrl] = useState("");
-  const [chunks, setChunks] = useState([]);
   const [QGQAObject, setQGQAObject] = useState([]);
+  const [isMoreFlashcards, setisMoreFlashcards] = useState(true);
 
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [key, setKey] = useState(1);
   const loaded_data = SampleData;
 
-  /**fetchChunks():
-   * Helper function that calls onClick of when the "Remember"
-   * button is clicked.  This gets the array we use as a queue,
-   * pops off the next value, and if this value is not NULL (signififying no more flash cards)
-   * We update React state and Chrome.storage
-   *
-   **/
-  function fetchChunks() {
-    //Insert Chrome logic here to access current URL. Note that this runs on rerender,
-    // and breaks during development, so only uncomment for prod
-    //https://blog.usejournal.com/making-an-interactive-chrome-extension-with-react-524483d7aa5d
-
-    chrome.storage.local.get(["allChunks"], function (result) {
-      var result = result.allChunks;
-      console.log("this is from content script in front end");
-      console.log(result);
-      chrome.storage.local.set({ storedChunks: result }, function (results) {
-        setChunks(results);
-        //And now make a call to get the first chunk
-        // getNextChunkandFetch();
-        // fetchBatchQGQAObjects();
-      });
-    });
-
-    // callback();
+  function renderFlashcard(currChunk) {
+    var context = currChunk.context;
+    var question = currChunk.question;
+    var answer = currChunk.answer;
+    setQuestion(question);
+    setAnswer(answer);
+    setKey(key + 1);
   }
 
-  /**fetchChunks():
-   * Helper function that calls onClick of when the "Remember"
-   * @param currChunk
-   **/
-  function checkifNull(currChunk) {
-    var question = currChunk.question;
-    return question == null ? true : false;
+  function addForgottenChunk(currChunk) {
+    chrome.storage.local.get(["forgotChunks"], function (forgotChunks_result) {
+      var forgotChunks = forgotChunks_result.forgotChunks;
+      console.log("this is forgot chunk in func");
+      console.log(forgotChunks);
+      var len = forgotChunks.push(currChunk);
+      chrome.storage.local.set({ forgotChunks: forgotChunks }, function (
+        results
+      ) {});
+    });
   }
 
   /**renderBatchHandler():
    * Helper function that calls onClick of when the "Remember"
    **/
-  function renderBatchHandler() {
+  function renderBatchHandler(forgotObject) {
     console.log("render batch ran");
+    var BATCH_SIZE = 4;
+
     //Used to be newCurrObject
-    chrome.storage.local.get(["currObjects"], function (co_result) {
-      //Get the IDX
-      chrome.storage.local.get(["idx"], function (i_result) {
-        var data = co_result.currObjects;
-        var idx = i_result.currObjects;
+    chrome.storage.local.get(["currObjects"], function (currObjects_result) {
+      chrome.storage.local.get(["idx"], function (idx_result) {
+        chrome.storage.local.get(["allChunks"], function (allChunks_result) {
+          chrome.storage.local.get(["forgotChunks"], function (
+            forgotChunks_result
+          ) {
+            var data = currObjects_result.currObjects;
+            var idx = idx_result.idx;
+            var allChunks = allChunks_result.allChunks;
+            var currForgotChunks = forgotChunks_result.forgotChunks;
 
-        console.log("this is data in render");
-        console.log(data);
-        // console.log(result);
+            console.log("this is currObjects");
+            console.log(data);
 
-        //Case one: check length of temporary_queue, if there's values left, then take from it!
-        // if (data.length > 1) {
-        //Execute checkIfNullHandler until the function evaluates to true,
-        //At which point it stops
-        while (true) {
-          var currChunk = data.shift();
-          var isNull = checkifNull(currChunk);
-          if (isNull == false) {
-            break;
-          }
-        }
-        //Create notion of batch_len filtered from nulls
-        var batch_len = data.length;
-        var context = currChunk.context;
-        var question = currChunk.question;
-        var answer = currChunk.answer;
+            var currChunk = data.shift();
+            if (currChunk != null) {
+              //If we set our forgot flag, then append this chunk to the end of the queue
+              if (forgotObject == true) {
+                addForgottenChunk(currChunk);
+              }
+              //Set currObjects to its new size
+              chrome.storage.local.set({ currObjects: data }, function (
+                results
+              ) {
+                //Update currChunk so that we can highlight, this triggers our opportunity to highlight
+                chrome.storage.local.set(
+                  { storedCurrChunk: currChunk },
+                  function (results) {
+                    renderFlashcard(currChunk);
+                    //Decide to fetch more or not
+                    var size = idx + BATCH_SIZE; //ex) we're in idx 8 + 4 =12, there are 13 elements in allchunks, no more requests
+                    if (size < allChunks.length) {
+                      var ifRender = false;
+                      fetchBatchQGQAObjects(ifRender);
+                    }
+                  }
+                );
+              });
+            } else if (currForgotChunks.length != 0) {
+              console.log("cfc");
 
-        //Set currObjects to its new size
-        chrome.storage.local.set({ currObjects: data }, function (results) {});
-        //Update currChunk so that we can highlight, this triggers our opportunity to highlight
-        console.log("this is currChunk in fcj");
-        console.log(currChunk);
-        chrome.storage.local.set({ storedCurrChunk: currChunk }, function (
-          results
-        ) {
-          setQuestion(question);
-          setAnswer(answer);
-          setKey(key + 1);
+              console.log(currForgotChunks);
+              var forgottenChunk = currForgotChunks.shift();
+              chrome.storage.local.set(
+                { forgotChunks: currForgotChunks },
+                function (results) {
+                  renderFlashcard(forgottenChunk);
+                }
+              );
+            } else {
+              console.log("I am empty!");
+              setisMoreFlashcards(false);
+            }
+          });
 
-          //If idx is 0 or divisible by 4, then render next batch
-          var ifRender = false;
-          fetchBatchQGQAObjects(ifRender);
+          // }
         });
-
-        //async start next req if size of data is sufficiently large
-        // updateBatchSize();
-        // }
-        // else if (data.length <= 1) {
-        //   console.log("to implement!");
-        //   //make new request to batch if size of
-        //   fetchBatchQGQAObjects();
-        // }
-        // else{
-
-        // }
       });
     });
   }
@@ -150,12 +139,19 @@ function FlashcardContainer(props) {
     return currObject;
   }
 
+  function checkifNull(currChunk) {
+    var question = currChunk.question;
+    return question == null ? true : false;
+  }
+
   /**renderBatchHandler():
    * Helper function that calls onClick of when the "Remember"
    **/
   function fetchBatchQGQAObjects(ifRender) {
     //Must pass in the next chunk-- time for chrome local storage!
     //Now, get the nextChunk
+    var BATCH_SIZE = 4;
+
     chrome.storage.local.get(["allChunks"], function (result) {
       //This is an array of text
       var allChunks = result.allChunks;
@@ -164,7 +160,7 @@ function FlashcardContainer(props) {
       chrome.storage.local.get(["idx"], function (result) {
         var idx = result.idx;
         //Get the next 4 chunks
-        var batchChunks = allChunks.slice(idx, idx + 4);
+        var batchChunks = allChunks.slice(idx, idx + BATCH_SIZE);
         var currChunk1 = batchChunks[0];
         var currChunk2 = batchChunks[1];
         var currChunk3 = batchChunks[2];
@@ -193,13 +189,18 @@ function FlashcardContainer(props) {
               var responses = [chunk1Resp, chunk2Resp, chunk3Resp, chunk4Resp];
               var currBatch = [];
               for (var response of responses) {
+                //Check if the response is undefined
+                console.log("this is response");
+                console.log(response);
+
                 var currObject = readResponse(response);
                 console.log("in batch this is an object returned");
                 console.log(currObject);
-                // console.log("in batch this is currBatch");
-                // console.log(currBatch);
-
-                currBatch.push(currObject);
+                //Check for nulls
+                var isNull = checkifNull(currObject);
+                if (isNull == false) {
+                  currBatch.push(currObject);
+                }
               }
 
               //Now, save our next 4 objects to local storage
@@ -207,7 +208,6 @@ function FlashcardContainer(props) {
               chrome.storage.local.get(["currObjects"], function (result) {
                 var allObjects = result.currObjects;
                 //now append our new batch to this queue
-                // var allObjects = [];
                 for (var curr of currBatch) {
                   allObjects.push(curr);
                 }
@@ -217,7 +217,8 @@ function FlashcardContainer(props) {
                   results
                 ) {
                   if (ifRender == true) {
-                    renderBatchHandler();
+                    var forgotObject = false;
+                    renderBatchHandler(forgotObject);
                   }
                 });
               });
@@ -257,7 +258,8 @@ function FlashcardContainer(props) {
 
   //Runs a single time upon load of component
   useEffect(() => {
-    fetchChunks();
+    // fetchChunks();
+
     var ifRender = true;
     fetchBatchQGQAObjects(ifRender);
   }, []);
@@ -277,33 +279,8 @@ function FlashcardContainer(props) {
    **/
   function handleEventRemember() {
     // getNextChunkandFetch();
-    renderBatchHandler();
-    //Get the current array stored in Chrome storage
-    // chrome.storage.local.get(["currArray"], function (results) {
-    //   var object_to_load = results.currArray.shift();
-    //   //Now set curr array equal to the popped value
-    //   //If there are no more entries to pop, do nothing
-    //   if (object_to_load != null) {
-    //     var updated_curr_array = results.currArray;
-
-    //     //Now, store the popped value in local storage to show on rerender
-    //     chrome.storage.local.set({ currObject: object_to_load });
-    //     chrome.storage.local.set(
-    //       { currArray: updated_curr_array },
-    //       function () {
-    //         //Query our local storage to get the most updated
-    //         var curr_question = object_to_load["question"];
-    //         var curr_answer = object_to_load["answer"];
-    //         setQuestion(curr_question);
-    //         setAnswer(curr_answer);
-    //         //Great hack here: to force a component dismount, we update keys of a flashcard manually
-    //         setKey(key + 1);
-    //       }
-    //     );
-    //   } else {
-    //     //Do nothing
-    //   }
-    // });
+    var forgotObject = false;
+    renderBatchHandler(forgotObject);
   }
 
   /**handleEventForgot():
@@ -315,8 +292,9 @@ function FlashcardContainer(props) {
    *
    **/
   function handleEventForgot() {
-    // getNextChunkandFetch();
-    renderBatchHandler();
+    //Pass in a flag to append currObject back to end of queue
+    var forgotObject = true;
+    renderBatchHandler(forgotObject);
 
     //Get the current object
     // chrome.storage.local.get(["currObject"], function (result) {
@@ -357,13 +335,17 @@ function FlashcardContainer(props) {
 
   return (
     <div className="Flashcard-bg-container">
-      <Flashcard
-        key={key}
-        question={question}
-        answer={answer}
-        onRemembered={handleEventRemember}
-        onForgot={handleEventForgot}
-      ></Flashcard>
+      {isMoreFlashcards ? (
+        <Flashcard
+          key={key}
+          question={question}
+          answer={answer}
+          onRemembered={handleEventRemember}
+          onForgot={handleEventForgot}
+        ></Flashcard>
+      ) : (
+        <div>Sorry, you've reached the end!</div>
+      )}
     </div>
   );
 }

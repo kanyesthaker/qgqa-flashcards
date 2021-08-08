@@ -38,6 +38,8 @@ function getAllChunks() {
 
   for (var i = 0; i < arr_of_divs.length - 2; ++i) {
     var chunks = [arr_of_divs[i], arr_of_divs[i + 1], arr_of_divs[i + 2]];
+    // var chunks = [arr_of_divs[i], arr_of_divs[i + 1]]; //Batches of 2 may increase performance
+
     var answerChunk = chunks.join(" ");
     arr_of_answer_chunks.push(answerChunk);
   }
@@ -47,6 +49,8 @@ function getAllChunks() {
   ) {});
   chrome.storage.local.set({ idx: 0 }, function (results) {});
   chrome.storage.local.set({ currObjects: [] }, function (results) {});
+  chrome.storage.local.set({ forgotChunks: [] }, function (results) {});
+
   console.timeEnd("answer time");
 }
 
@@ -73,10 +77,9 @@ function highlightText() {
   function truncate(str, nu_words) {
     return str.split(" ").splice(0, nu_words).join(" ");
   }
-  // Watch for changes to the user's options & apply them
+  // Get all p tags
   const divs = [...document.querySelectorAll("p")];
 
-  //If extension changed
   //make a request to get the current value in storage
   chrome.storage.local.get(["storedCurrChunk"], (results) => {
     var data = results.storedCurrChunk;

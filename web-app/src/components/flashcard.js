@@ -39,24 +39,47 @@ const FlashcardButtonsContainer = styled.div`
   position: ${(props) => props.absolute};
 `;
 
+const FlashcardButtonContainer = styled.div`
+  padding-top: 3%;
+  padding-bottom: 3%;
+  padding-left: 5%;
+  padding-right: 5%;
+  width: 410px;
+  display: flex;
+  flex-direction: row;
+  background-color: ${(props) => props.bgColor};
+  &:hover {
+    background-color: ${(props) => props.onHoverBg};
+    cursor: pointer;
+  }
+`;
+
+function changeonHover() {}
+
 function Flashcard_button(props) {
-  const Icon = props.icon;
   if (props.onForgot == "") {
     var onPress = props.onRemembered;
   } else {
     var onPress = props.onForgot;
   }
   return (
-    <div
-      className="Flashcard-button-container"
+    <FlashcardButtonContainer
       onClick={onPress}
-      style={{ backgroundColor: props.bgColor }}
+      bgColor={props.bgColor}
+      onHoverBg={props.onHoverBg}
+      onMouseEnter={changeonHover}
+      onMouseLeave={changeonHover}
     >
       <img className="Flashcard-button-icon" src={props.icon}></img>
       <div className="Flashcard-button-text" style={{ color: props.color }}>
-        {props.text}
+        {props.text}{" "}
       </div>
-    </div>
+    </FlashcardButtonContainer>
+    // <div
+    //   className="Flashcard-button-container"
+    //   onClick={onPress}
+    //   style={{ backgroundColor: props.bgColor }}
+    // >
   );
 }
 
@@ -80,6 +103,7 @@ function Flashcard_container(props) {
           text={"Forgot"}
           color="#774F00"
           bgColor="white"
+          onHoverBg="#FFE0A5"
           icon={Reload}
           onRemembered={""}
           onForgot={props.onForgot}
@@ -88,6 +112,7 @@ function Flashcard_container(props) {
           text={"Remembered"}
           color="#774F00"
           bgColor="#FFD37D"
+          onHoverBg="#FFE0A5"
           icon={Check}
           onRemembered={props.onRemembered}
           onForgot={""}
@@ -102,6 +127,7 @@ function Flashcard(props) {
   const [opacity2, setOpacity2] = useState(0);
   const [absolute1, setAbsolute1] = useState("");
   const [absolute2, setAbsolute2] = useState("absolute");
+  // const [key, setKey] = useState(0);
 
   return (
     <div className="Flashcard-container">
