@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect } from "react";
+import React, { Component, useState, useEffect, useReducer } from "react";
 import "./flashcard.css";
 import Check from "../icons/checkmark-sharp.svg";
 import Reload from "../icons/reload-sharp.svg";
@@ -48,13 +48,13 @@ const FlashcardButtonContainer = styled.div`
   display: flex;
   flex-direction: row;
   background-color: ${(props) => props.bgColor};
+
   &:hover {
     background-color: ${(props) => props.onHoverBg};
+
     cursor: pointer;
   }
 `;
-
-function changeonHover() {}
 
 function Flashcard_button(props) {
   if (props.onForgot == "") {
@@ -67,12 +67,12 @@ function Flashcard_button(props) {
       onClick={onPress}
       bgColor={props.bgColor}
       onHoverBg={props.onHoverBg}
-      onMouseEnter={changeonHover}
-      onMouseLeave={changeonHover}
+      // onMouseEnter={mouseEnter}
+      // onMouseLeave={mouseOut}
     >
       <img className="Flashcard-button-icon" src={props.icon}></img>
       <div className="Flashcard-button-text" style={{ color: props.color }}>
-        {props.text}{" "}
+        {props.text}
       </div>
     </FlashcardButtonContainer>
     // <div
@@ -88,6 +88,7 @@ function Flashcard_container(props) {
     opacity: props.opacity,
     position: props.absolute,
   };
+
   return (
     // <div className="Flashcard-answer-container" style={mystyle}>
     <FlashcardAnswerContainer opacity={props.opacity} absolute={props.absolute}>
@@ -152,7 +153,6 @@ function Flashcard(props) {
 
       <Flashcard_container
         opacity={opacity2}
-        answer={props.answer}
         absolute={absolute2}
         onRemembered={props.onRemembered}
         onForgot={props.onForgot}

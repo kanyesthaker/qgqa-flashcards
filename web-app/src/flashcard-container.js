@@ -27,15 +27,15 @@ import Skeleton from "react-loading-skeleton";
 /* global chrome */
 
 function FlashcardContainer(props) {
-  const [url, setUrl] = useState("");
-  const [QGQAObject, setQGQAObject] = useState([]);
   const [isMoreFlashcards, setisMoreFlashcards] = useState(true);
-
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [key, setKey] = useState(1);
-  const loaded_data = SampleData;
 
+  /**renderFlashcard():
+   * Set question,answer and key of next flashcard and trigger DOM unmount and rerender
+   * @param currChunk
+   **/
   function renderFlashcard(currChunk) {
     var context = currChunk.context;
     var question = currChunk.question;
@@ -45,6 +45,10 @@ function FlashcardContainer(props) {
     setKey(key + 1);
   }
 
+  /**addForgottenChunk():
+   * Helper function that appends chunk that a user has forgotten to end of forgotChunks arr
+   * @param currChunk
+   **/
   function addForgottenChunk(currChunk) {
     chrome.storage.local.get(["forgotChunks"], function (forgotChunks_result) {
       var forgotChunks = forgotChunks_result.forgotChunks;
@@ -58,7 +62,8 @@ function FlashcardContainer(props) {
   }
 
   /**renderBatchHandler():
-   * Helper function that calls onClick of when the "Remember"
+   * TODO: Write documentation
+   * @param forgotObject bool flag that represents if user has forgotten current card or not
    **/
   function renderBatchHandler(forgotObject) {
     console.log("render batch ran");
@@ -146,6 +151,8 @@ function FlashcardContainer(props) {
 
   /**renderBatchHandler():
    * Helper function that calls onClick of when the "Remember"
+   * @param ifRender bool flag passed in to determine if function should call renderBatchHandler
+   * Passed true on init, otherwise false
    **/
   function fetchBatchQGQAObjects(ifRender) {
     //Must pass in the next chunk-- time for chrome local storage!
@@ -204,7 +211,6 @@ function FlashcardContainer(props) {
               }
 
               //Now, save our next 4 objects to local storage
-              //UPDATE: append these values to our currObjects array
               chrome.storage.local.get(["currObjects"], function (result) {
                 var allObjects = result.currObjects;
                 //now append our new batch to this queue
@@ -258,8 +264,6 @@ function FlashcardContainer(props) {
 
   //Runs a single time upon load of component
   useEffect(() => {
-    // fetchChunks();
-
     var ifRender = true;
     fetchBatchQGQAObjects(ifRender);
   }, []);
@@ -295,42 +299,6 @@ function FlashcardContainer(props) {
     //Pass in a flag to append currObject back to end of queue
     var forgotObject = true;
     renderBatchHandler(forgotObject);
-
-    //Get the current object
-    // chrome.storage.local.get(["currObject"], function (result) {
-    //   var data = result.currObject;
-
-    //   //Get the current array stored in Chrome storage
-    //   chrome.storage.local.get(["currArray"], function (results) {
-    //     //Push current object to the end of the results array
-    //     var len_push_to_array = results.currArray.push(data);
-    //     //Get the next value
-    //     var object_to_load = results.currArray.shift();
-    //     //Now set curr array equal to the popped value
-
-    //     //If there are no more entries to pop, do nothing
-    //     if (object_to_load != null) {
-    //       var updated_curr_array = results.currArray;
-
-    //       //Now, store the popped value in local storage to show on rerender
-    //       chrome.storage.local.set({ currObject: object_to_load });
-    //       chrome.storage.local.set(
-    //         { currArray: updated_curr_array },
-    //         function () {
-    //           //Query our local storage to get the most updated
-    //           var curr_question = object_to_load["question"];
-    //           var curr_answer = object_to_load["answer"];
-    //           setQuestion(curr_question);
-    //           setAnswer(curr_answer);
-    //           //Great hack here: to force a component dismount, we update keys of a flashcard manually
-    //           setKey(key + 1);
-    //         }
-    //       );
-    //     } else {
-    //       //Do nothing
-    //     }
-    //   });
-    // });
   }
 
   return (
@@ -344,7 +312,9 @@ function FlashcardContainer(props) {
           onForgot={handleEventForgot}
         ></Flashcard>
       ) : (
-        <div>Sorry, you've reached the end!</div>
+        <div className="final-container">
+          Great job! No more questions to ask from our AI for now.{" "}
+        </div>
       )}
     </div>
   );
