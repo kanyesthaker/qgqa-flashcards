@@ -5,7 +5,7 @@ from sagemaker.deserializers import JSONDeserializer
 import time
 
 QA_NAME = "huggingface-pytorch-inference-2021-08-01-00-56-34-532"
-QG_NAME = "valhalla-t5-small-e2e-qg-20210802-2021-08-03-00-19-03-232"
+QG_NAME = "valhalla-t5-base-e2e-qg-2021-08-07-19-27-14-725"
 
 class QGSagemaker:
     def __init__(self):
