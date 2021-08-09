@@ -29,7 +29,10 @@ import Skeleton from "react-loading-skeleton";
 function FlashcardContainer(props) {
   const [isMoreFlashcards, setisMoreFlashcards] = useState(true);
   const [question, setQuestion] = useState("");
+  //Workaround to render this at the same time
   const [answer, setAnswer] = useState("");
+  const [reportAnswer, setReportAnswer] = useState("");
+
   const [key, setKey] = useState(1);
 
   /**renderFlashcard():
@@ -43,6 +46,7 @@ function FlashcardContainer(props) {
     setQuestion(question);
     setAnswer(answer);
     setKey(key + 1);
+    setReportAnswer("Report Answer");
   }
 
   /**addForgottenChunk():
@@ -55,9 +59,10 @@ function FlashcardContainer(props) {
       console.log("this is forgot chunk in func");
       console.log(forgotChunks);
       var len = forgotChunks.push(currChunk);
-      chrome.storage.local.set({ forgotChunks: forgotChunks }, function (
-        results
-      ) {});
+      chrome.storage.local.set(
+        { forgotChunks: forgotChunks },
+        function (results) {}
+      );
     });
   }
 
@@ -73,57 +78,59 @@ function FlashcardContainer(props) {
     chrome.storage.local.get(["currObjects"], function (currObjects_result) {
       chrome.storage.local.get(["idx"], function (idx_result) {
         chrome.storage.local.get(["allChunks"], function (allChunks_result) {
-          chrome.storage.local.get(["forgotChunks"], function (
-            forgotChunks_result
-          ) {
-            var data = currObjects_result.currObjects;
-            var idx = idx_result.idx;
-            var allChunks = allChunks_result.allChunks;
-            var currForgotChunks = forgotChunks_result.forgotChunks;
+          chrome.storage.local.get(
+            ["forgotChunks"],
+            function (forgotChunks_result) {
+              var data = currObjects_result.currObjects;
+              var idx = idx_result.idx;
+              var allChunks = allChunks_result.allChunks;
+              var currForgotChunks = forgotChunks_result.forgotChunks;
 
-            console.log("this is currObjects");
-            console.log(data);
+              console.log("this is currObjects");
+              console.log(data);
 
-            var currChunk = data.shift();
-            if (currChunk != null) {
-              //If we set our forgot flag, then append this chunk to the end of the queue
-              if (forgotObject == true) {
-                addForgottenChunk(currChunk);
-              }
-              //Set currObjects to its new size
-              chrome.storage.local.set({ currObjects: data }, function (
-                results
-              ) {
-                //Update currChunk so that we can highlight, this triggers our opportunity to highlight
+              var currChunk = data.shift();
+              if (currChunk != null) {
+                //If we set our forgot flag, then append this chunk to the end of the queue
+                if (forgotObject == true) {
+                  addForgottenChunk(currChunk);
+                }
+                //Set currObjects to its new size
                 chrome.storage.local.set(
-                  { storedCurrChunk: currChunk },
+                  { currObjects: data },
                   function (results) {
-                    renderFlashcard(currChunk);
-                    //Decide to fetch more or not
-                    var size = idx + BATCH_SIZE; //ex) we're in idx 8 + 4 =12, there are 13 elements in allchunks, no more requests
-                    if (size < allChunks.length) {
-                      var ifRender = false;
-                      fetchBatchQGQAObjects(ifRender);
-                    }
+                    //Update currChunk so that we can highlight, this triggers our opportunity to highlight
+                    chrome.storage.local.set(
+                      { storedCurrChunk: currChunk },
+                      function (results) {
+                        renderFlashcard(currChunk);
+                        //Decide to fetch more or not
+                        var size = idx + BATCH_SIZE; //ex) we're in idx 8 + 4 =12, there are 13 elements in allchunks, no more requests
+                        // if (size <= allChunks.length) {
+                        //   var ifRender = false;
+                        //   fetchBatchQGQAObjects(ifRender);
+                        // }
+                      }
+                    );
                   }
                 );
-              });
-            } else if (currForgotChunks.length != 0) {
-              console.log("cfc");
+              } else if (currForgotChunks.length != 0) {
+                console.log("cfc");
 
-              console.log(currForgotChunks);
-              var forgottenChunk = currForgotChunks.shift();
-              chrome.storage.local.set(
-                { forgotChunks: currForgotChunks },
-                function (results) {
-                  renderFlashcard(forgottenChunk);
-                }
-              );
-            } else {
-              console.log("I am empty!");
-              setisMoreFlashcards(false);
+                console.log(currForgotChunks);
+                var forgottenChunk = currForgotChunks.shift();
+                chrome.storage.local.set(
+                  { forgotChunks: currForgotChunks },
+                  function (results) {
+                    renderFlashcard(forgottenChunk);
+                  }
+                );
+              } else {
+                console.log("I am empty!");
+                setisMoreFlashcards(false);
+              }
             }
-          });
+          );
 
           // }
         });
@@ -136,6 +143,7 @@ function FlashcardContainer(props) {
    * @param response
    **/
   function readResponse(response) {
+    //Data can be null if there is an error
     var data = response.data;
     data = JSON.parse(data.body);
     //Access values in the random ID string
@@ -167,6 +175,8 @@ function FlashcardContainer(props) {
       chrome.storage.local.get(["idx"], function (result) {
         var idx = result.idx;
         //Get the next 4 chunks
+        console.log("this is IDX before slice");
+        console.log(idx);
         var batchChunks = allChunks.slice(idx, idx + BATCH_SIZE);
         var currChunk1 = batchChunks[0];
         var currChunk2 = batchChunks[1];
@@ -219,17 +229,22 @@ function FlashcardContainer(props) {
                 }
                 console.log("this is current all objects");
                 console.log(allObjects);
-                chrome.storage.local.set({ currObjects: allObjects }, function (
-                  results
-                ) {
-                  if (ifRender == true) {
-                    var forgotObject = false;
-                    renderBatchHandler(forgotObject);
+                chrome.storage.local.set(
+                  { currObjects: allObjects },
+                  function (results) {
+                    if (ifRender == true) {
+                      var forgotObject = false;
+                      renderBatchHandler(forgotObject);
+                    }
                   }
-                });
+                );
               });
             })
-          );
+          )
+          //Believe this only catches the first error, but it's something
+          .catch((error) => {
+            console.log(error);
+          });
       });
     });
   }
@@ -308,6 +323,7 @@ function FlashcardContainer(props) {
           key={key}
           question={question}
           answer={answer}
+          reportAnswer={reportAnswer}
           onRemembered={handleEventRemember}
           onForgot={handleEventForgot}
         ></Flashcard>
