@@ -85,8 +85,8 @@ function getAllChunks() {
 
   //-2 to generate chunks of size 3 each
   var arr_of_answer_chunks = [];
-  for (var i = 0; i < arr_of_divs.length - 2; ++i) {
-    var chunks = [arr_of_divs[i], arr_of_divs[i + 1], arr_of_divs[i + 2]];
+  for (var j = 0; j < arr_of_divs.length - 2; ++j) {
+    var chunks = [arr_of_divs[i], arr_of_divs[j + 1], arr_of_divs[j + 2]];
     // var chunks = [arr_of_divs[i], arr_of_divs[i + 1]]; //Batches of 2 may increase performance
     var answerChunk = chunks.join(" ");
     arr_of_answer_chunks.push(answerChunk);
@@ -157,6 +157,9 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
         try {
           var arr_of_answer_chunks = results[0];
           arr_of_answer_chunks = arr_of_answer_chunks.result;
+          if (arr_of_answer_chunks.length < 4) {
+            throw new Error("Webpage is not able to be parsed");
+          }
           chrome.storage.local.set(
             { allChunks: arr_of_answer_chunks },
             function (results) {}

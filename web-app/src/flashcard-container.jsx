@@ -15,18 +15,31 @@ import {
 } from "./chrome-storage.js";
 
 /**
+ * Documentation updated Aug 10 2021
  * FILE HEADER: This stateful flashcard-container does the following
  * related to rendering flashcards:
- * 1. Accesses chrome.tabs API to find the user's current TAB URL
- * 2. POSTs to endpoint to receive flashcards object
- * 3. Maintains an internal queue to keep track of which flashcard to display,
- * initialized in initFlashcards() and updated in handleClick()
- * 4. Persists this queue in chrome.storage.local in order to have a user's position
- * in the queue persist whether extension is closed or opened.
- * @param question - a question string passed as prop to flashcard.js
- * @param answer - a answer string passed as prop to flashcard.js
- * @param onPress - a custom onclick function passed to flashcard.js to propagate state to children
- * @param key - an arbitrary counter passed to flashcard.js used to force a render to display new flashcards
+ * 1. Calls UseEffect() a single time on init of the app to fetchBatchQGQAObjects(), if no errors
+ * 2. Sends batch requests of 4 to Sagemaker endpoint with chunks parsed in background.js 
+ * 3. Renders flashcard in renderBatchHandler()
+ * 4. Maintains an internal queue titled @param currObjects to keep track of which flashcard to display.  
+ * 4. Maintains internal queue @param currForgotChunks to keep track of chunks that were forgotten to render
+ * 5. Determines whether to render a flashcard, error message, or message when all flashcards are exhausted
+ * 
+ * LOCAL STORAGE OBJECTS
+ * @param forgotChunks - internal queue of current all forgotCunks
+ * @param currObjects - internal queue of current chunks received by the model and not yet rendered
+ * @param allChunks - parsed and preprocessed array of chunks 
+ * @param idx - int idx counter used to slice into allChunks to get the next batch of 4 objects.
+ * @param errorOccured - bool set in background.js if error occured
+ *
+ * PARAMS PASSED TO FLASHCARDS
+ * @param key
+ * @param question
+ * @param answer
+ * @param reportAnswer
+ * @param onRemembered
+ * @param onForgot
+
  **/
 
 //ESSENTIAL: Let ESLint know that we are accessing Chrome browser methods
@@ -35,7 +48,6 @@ import {
 function FlashcardContainer(props) {
   const [isMoreFlashcards, setisMoreFlashcards] = useState(true);
   const [errorOccured, setErrorOccured] = useState(false);
-
   const [question, setQuestion] = useState("");
   //Workaround to render this at the same time
   const [answer, setAnswer] = useState("");
@@ -274,7 +286,6 @@ function FlashcardContainer(props) {
               reportAnswer={reportAnswer}
               onRemembered={handleEventRemember}
               onForgot={handleEventForgot}
-              isMoreFlashcards={isMoreFlashcards}
             ></Flashcard>
           ) : (
             <div className="final-container">
