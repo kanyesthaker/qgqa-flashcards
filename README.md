@@ -24,7 +24,7 @@
 
 ## TO BUILD AND DEPLOY CHROME EXTENSION LOCALLY:
 
-1. In the web-app folder, run npm run build to build a production version of the app.
+1. In the web-app folder, run npm install to get needed dependencies, then npm run build to build a production version of the app.
 2. In Chrome, click on the top right jigsaw puzzle icon and navigate to "Manage Extensions"
 3. Toggle Developer Mode on in the top right
 4. Select "Load unpacked" in top left
