@@ -77,18 +77,11 @@ function FlashcardContainer(props) {
 
     //Used to be newCurrObject
     chrome.storage.local.get(["currObjects"], function (currObjects_result) {
-      console.log("1");
       chrome.storage.local.get(["idx"], function (idx_result) {
-        console.log("2");
-
         chrome.storage.local.get(["allChunks"], function (allChunks_result) {
-          console.log("3");
-
           chrome.storage.local.get(
             ["forgotChunks"],
             function (forgotChunks_result) {
-              console.log("4");
-
               var data = currObjects_result.currObjects;
               var idx = idx_result.idx;
               var allChunks = allChunks_result.allChunks;
@@ -272,15 +265,12 @@ function FlashcardContainer(props) {
 
   //Runs a single time upon load of component
   useEffect(() => {
-    var ifRender = true;
-    fetchBatchQGQAObjects(ifRender);
+    chrome.storage.local.get(["errorOccured"], function (error_occured_result) {
+      var errorOccured = error_occured_result.errorOccured;
+      var ifRender = true;
+      errorOccured ? setErrorOccured(true) : fetchBatchQGQAObjects(ifRender);
+    });
   }, []);
-
-  /**HOOK TO DETERMINE TABS + POST
-   **/
-  // useEffect(() => {
-  //   //This handles logic for changing to the next card
-  // });
 
   /**handleEventRemember():
    * Helper function that calls onClick of when the "Remember"
@@ -311,21 +301,26 @@ function FlashcardContainer(props) {
 
   return (
     <div className="Flashcard-bg-container">
-      {errorOccured && <div> There's an Error</div>}
-
-      {isMoreFlashcards && !errorOccured ? (
-        <Flashcard
-          key={key}
-          question={question}
-          answer={answer}
-          reportAnswer={reportAnswer}
-          onRemembered={handleEventRemember}
-          onForgot={handleEventForgot}
-        ></Flashcard>
+      {!errorOccured ? (
+        [
+          isMoreFlashcards ? (
+            <Flashcard
+              key={key}
+              question={question}
+              answer={answer}
+              reportAnswer={reportAnswer}
+              onRemembered={handleEventRemember}
+              onForgot={handleEventForgot}
+              isMoreFlashcards={isMoreFlashcards}
+            ></Flashcard>
+          ) : (
+            <div className="final-container">
+              Great job! No more questions to ask from our AI for now.{" "}
+            </div>
+          ),
+        ]
       ) : (
-        <div className="final-container">
-          Great job! No more questions to ask from our AI for now.{" "}
-        </div>
+        <div> There's an Error</div>
       )}
     </div>
   );
