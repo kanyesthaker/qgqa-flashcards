@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useReducer,
   useCallback,
+  Fragment,
 } from "react";
 import "./flashcard.css";
 import Check from "../icons/checkmark-sharp.svg";
@@ -192,69 +193,73 @@ function Flashcard(props) {
     console.count("render");
   }
 
+  const isMoreFlashcards = props.isMoreFlashcards;
+
   return (
-    <div className="Flashcard-container">
-      <div className="Flashcard-question">
-        {props.question || <Skeleton />}{" "}
-      </div>
-
-      <FlashcardAnswerHidden
-        onClick={() => {
-          setOpacity1(0);
-          setOpacity2(1);
-          setAbsolute1("absolute");
-          setAbsolute2("");
-          setDisplay1("none");
-          setDisplay2("");
-        }}
-        opacity={opacity1}
-        position={absolute1}
-        display={display1}
-      >
-        <div className="Flashcard-answer-hidden-text">
-          Click anywhere to reveal
+    <React.Fragment>
+      <div className="Flashcard-container">
+        <div className="Flashcard-question">
+          {props.question || <Skeleton />}{" "}
         </div>
-      </FlashcardAnswerHidden>
 
-      <FlashcardAnswerContainer opacity={opacity2} absolute={absolute2}>
-        <FlashcardAnswer opacity={opacity2} absolute={absolute2}>
-          {props.answer || <Skeleton />}
-        </FlashcardAnswer>
-        {!ifReported && (
-          <ReportAnswer onClick={settoTrue}>
-            {props.reportAnswer || <Skeleton />}
-          </ReportAnswer>
-        )}
-        {ifReported && (
-          <ReportedAnswer>Thank you for your feedback</ReportedAnswer>
-        )}
-      </FlashcardAnswerContainer>
+        <FlashcardAnswerHidden
+          onClick={() => {
+            setOpacity1(0);
+            setOpacity2(1);
+            setAbsolute1("absolute");
+            setAbsolute2("");
+            setDisplay1("none");
+            setDisplay2("");
+          }}
+          opacity={opacity1}
+          position={absolute1}
+          display={display1}
+        >
+          <div className="Flashcard-answer-hidden-text">
+            Click anywhere to reveal
+          </div>
+        </FlashcardAnswerHidden>
 
-      <FlashcardButtonsContainer
-        opacity={opacity2}
-        absolute={opacity2}
-        display={display2}
-      >
-        <Flashcard_button
-          text={"Forgot"}
-          color="#774F00"
-          bgColor="white"
-          onHoverBg="#FFE0A5"
-          icon={Reload}
-          onRemembered={""}
-          onForgot={props.onForgot}
-        ></Flashcard_button>
-        <Flashcard_button
-          text={"Remembered"}
-          color="#774F00"
-          bgColor="#FFD37D"
-          onHoverBg="#FFE0A5"
-          icon={Check}
-          onRemembered={props.onRemembered}
-          onForgot={""}
-        ></Flashcard_button>
-      </FlashcardButtonsContainer>
-    </div>
+        <FlashcardAnswerContainer opacity={opacity2} absolute={absolute2}>
+          <FlashcardAnswer opacity={opacity2} absolute={absolute2}>
+            {props.answer || <Skeleton />}
+          </FlashcardAnswer>
+          {!ifReported && (
+            <ReportAnswer onClick={settoTrue}>
+              {props.reportAnswer || <Skeleton />}
+            </ReportAnswer>
+          )}
+          {ifReported && (
+            <ReportedAnswer>Thank you for your feedback</ReportedAnswer>
+          )}
+        </FlashcardAnswerContainer>
+
+        <FlashcardButtonsContainer
+          opacity={opacity2}
+          absolute={opacity2}
+          display={display2}
+        >
+          <Flashcard_button
+            text={"Forgot"}
+            color="#774F00"
+            bgColor="white"
+            onHoverBg="#FFE0A5"
+            icon={Reload}
+            onRemembered={""}
+            onForgot={props.onForgot}
+          ></Flashcard_button>
+          <Flashcard_button
+            text={"Remembered"}
+            color="#774F00"
+            bgColor="#FFD37D"
+            onHoverBg="#FFE0A5"
+            icon={Check}
+            onRemembered={props.onRemembered}
+            onForgot={""}
+          ></Flashcard_button>
+        </FlashcardButtonsContainer>
+      </div>
+    </React.Fragment>
   );
 }
 

@@ -28,11 +28,12 @@ import Skeleton from "react-loading-skeleton";
 
 function FlashcardContainer(props) {
   const [isMoreFlashcards, setisMoreFlashcards] = useState(true);
+  const [errorOccured, setErrorOccured] = useState(false);
+
   const [question, setQuestion] = useState("");
   //Workaround to render this at the same time
   const [answer, setAnswer] = useState("");
   const [reportAnswer, setReportAnswer] = useState("");
-
   const [key, setKey] = useState(1);
 
   /**renderFlashcard():
@@ -106,17 +107,16 @@ function FlashcardContainer(props) {
                         renderFlashcard(currChunk);
                         //Decide to fetch more or not
                         var size = idx + BATCH_SIZE; //ex) we're in idx 8 + 4 =12, there are 13 elements in allchunks, no more requests
-                        // if (size <= allChunks.length) {
-                        //   var ifRender = false;
-                        //   fetchBatchQGQAObjects(ifRender);
-                        // }
+                        if (size <= allChunks.length) {
+                          var ifRender = false;
+                          fetchBatchQGQAObjects(ifRender);
+                        }
                       }
                     );
                   }
                 );
               } else if (currForgotChunks.length != 0) {
                 console.log("cfc");
-
                 console.log(currForgotChunks);
                 var forgottenChunk = currForgotChunks.shift();
                 chrome.storage.local.set(
@@ -131,7 +131,6 @@ function FlashcardContainer(props) {
               }
             }
           );
-
           // }
         });
       });
@@ -152,9 +151,47 @@ function FlashcardContainer(props) {
     return currObject;
   }
 
+  /**addForgottenChunk():
+   * Helper function that appends chunk that a user has forgotten to end of forgotChunks arr
+   * @param currChunk
+   **/
   function checkifNull(currChunk) {
     var question = currChunk.question;
     return question == null ? true : false;
+  }
+
+  /**preprocess_responses():
+   * Helper function that appends chunk that a user has forgotten to end of forgotChunks arr
+   * @param responses
+   * @param ifRender
+   **/
+  function preprocess_responses(responses, ifRender) {
+    var currBatch = [];
+    for (var response of responses) {
+      var currObject = readResponse(response);
+      console.log("in batch this is an object returned");
+      console.log(currObject);
+      var isNull = checkifNull(currObject);
+      if (isNull == false) {
+        currBatch.push(currObject);
+      }
+    }
+    //Now, save our next 4 objects to local storage
+    chrome.storage.local.get(["currObjects"], function (result) {
+      var allObjects = result.currObjects;
+      //now append our new batch to this queue
+      for (var curr of currBatch) {
+        allObjects.push(curr);
+      }
+      console.log("this is current all objects");
+      console.log(allObjects);
+      chrome.storage.local.set({ currObjects: allObjects }, function (results) {
+        if (ifRender == true) {
+          var forgotObject = false;
+          renderBatchHandler(forgotObject);
+        }
+      });
+    });
   }
 
   /**renderBatchHandler():
@@ -163,17 +200,9 @@ function FlashcardContainer(props) {
    * Passed true on init, otherwise false
    **/
   function fetchBatchQGQAObjects(ifRender) {
-    //Must pass in the next chunk-- time for chrome local storage!
-    //Now, get the nextChunk
     var BATCH_SIZE = 4;
-
     chrome.storage.local.get(["allChunks"], function (result) {
-      //This is an array of text
       var allChunks = result.allChunks;
-      var chunksLen = allChunks.length;
-
-      //check if allChunks has rendered yet
-      // if (allChunks != null) {
       chrome.storage.local.get(["idx"], function (result) {
         var idx = result.idx;
         //Get the next 4 chunks
@@ -186,10 +215,8 @@ function FlashcardContainer(props) {
         var currChunk2 = batchChunks[1];
         var currChunk3 = batchChunks[2];
         var currChunk4 = batchChunks[3];
-
         //Update our IDX
         chrome.storage.local.set({ idx: idx + 4 }, function (results) {});
-
         const ENDPOINT_STRING =
           "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/generate-single ";
         axios
@@ -206,94 +233,28 @@ function FlashcardContainer(props) {
               chunk3Resp,
               chunk4Resp
             ) {
-              // do something
               var responses = [chunk1Resp, chunk2Resp, chunk3Resp, chunk4Resp];
-              var currBatch = [];
-              for (var response of responses) {
-                //Check if the response is undefined
-                console.log("this is response");
-                console.log(response);
-
-                var currObject = readResponse(response);
-                console.log("in batch this is an object returned");
-                console.log(currObject);
-                //Check for nulls
-                var isNull = checkifNull(currObject);
-                if (isNull == false) {
-                  currBatch.push(currObject);
-                }
-              }
-
-              //Now, save our next 4 objects to local storage
-              chrome.storage.local.get(["currObjects"], function (result) {
-                var allObjects = result.currObjects;
-                //now append our new batch to this queue
-                for (var curr of currBatch) {
-                  allObjects.push(curr);
-                }
-                console.log("this is current all objects");
-                console.log(allObjects);
-                chrome.storage.local.set(
-                  { currObjects: allObjects },
-                  function (results) {
-                    if (ifRender == true) {
-                      var forgotObject = false;
-                      renderBatchHandler(forgotObject);
-                    }
-                  }
-                );
-              });
+              preprocess_responses(responses, ifRender);
             })
           )
-
           //Believe this only catches the first error, but it's something
           .catch((error) => {
+            console.log("An error has occured");
             console.log(error);
+            setErrorOccured(true);
           });
       });
-      // }
     });
-  }
-
-  function fetchQGQAObject() {
-    console.log("new");
-
-    // axios
-    //   .post(ENDPOINT_STRING, {
-    //     ctx: currChunk,
-    //   })
-    //   .then(function (response) {
-    //     console.log("successfully got QA object");
-    //     console.log(response);
-    //     var data = response.data;
-    //     data = JSON.parse(data.body);
-    //     //Access values in the random ID string
-    //     var prop_to_access = Object.keys(data)[0];
-    //     var currObject = data[prop_to_access];
-    //     //Store this in storage
-    //     chrome.storage.local.set({ newCurrObject: currObject }, function (
-    //       results
-    //     ) {
-    //       //call our handler
-    //       checkIfNullHandler();
-    //     });
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error);
-    //   });
   }
 
   //Runs a single time upon load of component
   useEffect(() => {
-    var ifRender = true;
-    fetchBatchQGQAObjects(ifRender);
+    chrome.storage.local.get(["errorOccured"], function (error_occured_result) {
+      var errorOccured = error_occured_result.errorOccured;
+      var ifRender = true;
+      errorOccured ? setErrorOccured(true) : fetchBatchQGQAObjects(ifRender);
+    });
   }, []);
-
-  /**HOOK TO DETERMINE TABS + POST
-   **/
-  useEffect(() => {
-    //This handles logic for changing to the next card
-  });
 
   /**handleEventRemember():
    * Helper function that calls onClick of when the "Remember"
@@ -324,19 +285,26 @@ function FlashcardContainer(props) {
 
   return (
     <div className="Flashcard-bg-container">
-      {isMoreFlashcards ? (
-        <Flashcard
-          key={key}
-          question={question}
-          answer={answer}
-          reportAnswer={reportAnswer}
-          onRemembered={handleEventRemember}
-          onForgot={handleEventForgot}
-        ></Flashcard>
+      {!errorOccured ? (
+        [
+          isMoreFlashcards ? (
+            <Flashcard
+              key={key}
+              question={question}
+              answer={answer}
+              reportAnswer={reportAnswer}
+              onRemembered={handleEventRemember}
+              onForgot={handleEventForgot}
+              isMoreFlashcards={isMoreFlashcards}
+            ></Flashcard>
+          ) : (
+            <div className="final-container">
+              Great job! No more questions to ask from our AI for now.{" "}
+            </div>
+          ),
+        ]
       ) : (
-        <div className="final-container">
-          Great job! No more questions to ask from our AI for now.{" "}
-        </div>
+        <div className="final-container"> There's an Error</div>
       )}
     </div>
   );
