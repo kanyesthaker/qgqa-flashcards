@@ -28,11 +28,12 @@ import Skeleton from "react-loading-skeleton";
 
 function FlashcardContainer(props) {
   const [isMoreFlashcards, setisMoreFlashcards] = useState(true);
+  const [errorOccured, setErrorOccured] = useState(false);
+
   const [question, setQuestion] = useState("");
   //Workaround to render this at the same time
   const [answer, setAnswer] = useState("");
   const [reportAnswer, setReportAnswer] = useState("");
-
   const [key, setKey] = useState(1);
 
   /**renderFlashcard():
@@ -76,11 +77,18 @@ function FlashcardContainer(props) {
 
     //Used to be newCurrObject
     chrome.storage.local.get(["currObjects"], function (currObjects_result) {
+      console.log("1");
       chrome.storage.local.get(["idx"], function (idx_result) {
+        console.log("2");
+
         chrome.storage.local.get(["allChunks"], function (allChunks_result) {
+          console.log("3");
+
           chrome.storage.local.get(
             ["forgotChunks"],
             function (forgotChunks_result) {
+              console.log("4");
+
               var data = currObjects_result.currObjects;
               var idx = idx_result.idx;
               var allChunks = allChunks_result.allChunks;
@@ -116,7 +124,6 @@ function FlashcardContainer(props) {
                 );
               } else if (currForgotChunks.length != 0) {
                 console.log("cfc");
-
                 console.log(currForgotChunks);
                 var forgottenChunk = currForgotChunks.shift();
                 chrome.storage.local.set(
@@ -144,11 +151,16 @@ function FlashcardContainer(props) {
    **/
   function readResponse(response) {
     //Data can be null if there is an error
+    // try {
     var data = response.data;
     data = JSON.parse(data.body);
     //Access values in the random ID string
     var prop_to_access = Object.keys(data)[0];
     var currObject = data[prop_to_access];
+    // } catch (err) {
+    //   alert("error occured");
+    // }
+
     return currObject;
   }
 
@@ -171,8 +183,9 @@ function FlashcardContainer(props) {
       //This is an array of text
       var allChunks = result.allChunks;
       var chunksLen = allChunks.length;
+      console.log(allChunks);
 
-      //check if allChunks has rendered yet
+      //error handling: if allChunks is empty, return an err
       // if (allChunks != null) {
       chrome.storage.local.get(["idx"], function (result) {
         var idx = result.idx;
@@ -248,39 +261,13 @@ function FlashcardContainer(props) {
 
           //Believe this only catches the first error, but it's something
           .catch((error) => {
+            console.log("An error has occured");
             console.log(error);
+            setErrorOccured(true);
           });
       });
       // }
     });
-  }
-
-  function fetchQGQAObject() {
-    console.log("new");
-
-    // axios
-    //   .post(ENDPOINT_STRING, {
-    //     ctx: currChunk,
-    //   })
-    //   .then(function (response) {
-    //     console.log("successfully got QA object");
-    //     console.log(response);
-    //     var data = response.data;
-    //     data = JSON.parse(data.body);
-    //     //Access values in the random ID string
-    //     var prop_to_access = Object.keys(data)[0];
-    //     var currObject = data[prop_to_access];
-    //     //Store this in storage
-    //     chrome.storage.local.set({ newCurrObject: currObject }, function (
-    //       results
-    //     ) {
-    //       //call our handler
-    //       checkIfNullHandler();
-    //     });
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error);
-    //   });
   }
 
   //Runs a single time upon load of component
@@ -291,9 +278,9 @@ function FlashcardContainer(props) {
 
   /**HOOK TO DETERMINE TABS + POST
    **/
-  useEffect(() => {
-    //This handles logic for changing to the next card
-  });
+  // useEffect(() => {
+  //   //This handles logic for changing to the next card
+  // });
 
   /**handleEventRemember():
    * Helper function that calls onClick of when the "Remember"
@@ -324,7 +311,9 @@ function FlashcardContainer(props) {
 
   return (
     <div className="Flashcard-bg-container">
-      {isMoreFlashcards ? (
+      {errorOccured && <div> There's an Error</div>}
+
+      {isMoreFlashcards && !errorOccured ? (
         <Flashcard
           key={key}
           question={question}
