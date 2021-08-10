@@ -38,45 +38,58 @@ function getAllChunks() {
 
   for (var i = 0; i < arr_of_divs.length - 2; ++i) {
     var chunks = [arr_of_divs[i], arr_of_divs[i + 1], arr_of_divs[i + 2]];
+    // var chunks = [arr_of_divs[i], arr_of_divs[i + 1]]; //Batches of 2 may increase performance
+
     var answerChunk = chunks.join(" ");
     arr_of_answer_chunks.push(answerChunk);
   }
 
-  chrome.storage.local.set({ allChunks: arr_of_answer_chunks }, function (
-    results
-  ) {});
-  chrome.storage.local.set({ idx: 0 }, function (results) {});
-  chrome.storage.local.set({ currObjects: [] }, function (results) {});
   console.timeEnd("answer time");
+  return arr_of_answer_chunks;
 }
 
 //Listener function to determine if should discard a chunk
-chrome.tabs.onActivated.addListener(function (info) {
-  //get cur tab
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    var tab_id = tabs[0].id;
-    console.log("tab id in get all chunks");
-    console.log(tab_id);
-    chrome.scripting.executeScript(
-      {
-        target: { tabId: tab_id },
-        function: getAllChunks,
-      },
-      (results) => {
-        console.log(results);
-      }
-    );
+chrome.tabs.onActivated.addListener(function (activeInfo) {
+  chrome.storage.local.set({ idx: 0 }, function (results) {
+    chrome.storage.local.set({ currObjects: [] }, function (results) {
+      chrome.storage.local.set({ forgotChunks: [] }, function (results) {
+        console.log("All callbacks set");
+      });
+    });
   });
+  //get cur tab
+  // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+  var tab_id = activeInfo.tabId;
+  console.log("tab id in get all chunks");
+  console.log(tab_id);
+  chrome.scripting.executeScript(
+    {
+      target: { tabId: tab_id },
+      function: getAllChunks,
+    },
+    (results) => {
+      console.log("all results");
+      console.log(results);
+
+      var arr_of_answer_chunks = results[0];
+      arr_of_answer_chunks = arr_of_answer_chunks.result;
+
+      chrome.storage.local.set(
+        { allChunks: arr_of_answer_chunks },
+        function (results) {}
+      );
+    }
+  );
+  // });
 });
 
 function highlightText() {
   function truncate(str, nu_words) {
     return str.split(" ").splice(0, nu_words).join(" ");
   }
-  // Watch for changes to the user's options & apply them
+  // Get all p tags
   const divs = [...document.querySelectorAll("p")];
 
-  //If extension changed
   //make a request to get the current value in storage
   chrome.storage.local.get(["storedCurrChunk"], (results) => {
     var data = results.storedCurrChunk;
