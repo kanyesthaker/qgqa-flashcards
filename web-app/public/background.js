@@ -7,7 +7,10 @@ const getObjectFromLocalStorage = async function (key) {
         resolve(value[key]);
       });
     } catch (ex) {
+      // chrome.storage.local.set({ errorOccured: true }, function () {
       reject(ex);
+      // });
+      // reject(ex);
     }
   });
 };
@@ -113,6 +116,9 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
         try {
           var arr_of_answer_chunks = results[0];
           arr_of_answer_chunks = arr_of_answer_chunks.result;
+          if (arr_of_answer_chunks.length < 4) {
+            throw new Error("Webpage is not able to be parsed");
+          }
           chrome.storage.local.set(
             { allChunks: arr_of_answer_chunks },
             function (results) {}

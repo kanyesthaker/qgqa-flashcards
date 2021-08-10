@@ -161,7 +161,6 @@ function FlashcardContainer(props) {
     for (var curr of currBatch) {
       allObjects.push(curr);
     }
-
     console.log("this is current all objects");
     console.log(allObjects);
     await saveObjectInLocalStorage({ currObjects: allObjects });
@@ -179,9 +178,15 @@ function FlashcardContainer(props) {
    **/
   async function fetchBatchQGQAObjects(ifRender) {
     var BATCH_SIZE = 4;
-    var allChunks = await getObjectFromLocalStorage("allChunks");
-    var idx = await getObjectFromLocalStorage("idx");
-
+    //Check for null value of allchunks here
+    try {
+      var allChunks = await getObjectFromLocalStorage("allChunks");
+      var idx = await getObjectFromLocalStorage("idx");
+    } catch (error) {
+      console.log("An error has occured");
+      console.log(error);
+      setErrorOccured(true);
+    }
     //Get the next 4 chunks
     console.log("this is IDX before slice");
     console.log(idx);
@@ -223,6 +228,8 @@ function FlashcardContainer(props) {
     //need to use traditional methods here
     chrome.storage.local.get(["errorOccured"], function (error_occured_result) {
       var errorOccured = error_occured_result.errorOccured;
+      console.log("this is error on init");
+      console.log(errorOccured);
       var ifRender = true;
       errorOccured ? setErrorOccured(true) : fetchBatchQGQAObjects(ifRender);
     });
@@ -276,7 +283,10 @@ function FlashcardContainer(props) {
           ),
         ]
       ) : (
-        <div className="final-container"> There's an Error</div>
+        <div className="final-container">
+          {" "}
+          Ferrett can't read this type of page. Try again on another site!
+        </div>
       )}
     </div>
   );

@@ -1,6 +1,8 @@
 //ESSENTIAL: Let ESLint know that we are accessing Chrome browser methods
 /* global chrome */
 
+//This code heavily inspired by https://gist.github.com/sumitpore/47439fcd86696a71bf083ede8bbd5466
+
 /**
  * Retrieve object from Chrome's Local StorageArea
  * @param {string} key
@@ -12,6 +14,7 @@ const getObjectFromLocalStorage = async function (key) {
         resolve(value[key]);
       });
     } catch (ex) {
+      //When the promise is rejected, set the state of chrome local storage isError to true
       reject(ex);
     }
   });
