@@ -107,10 +107,10 @@ function FlashcardContainer(props) {
                         renderFlashcard(currChunk);
                         //Decide to fetch more or not
                         var size = idx + BATCH_SIZE; //ex) we're in idx 8 + 4 =12, there are 13 elements in allchunks, no more requests
-                        // if (size <= allChunks.length) {
-                        //   var ifRender = false;
-                        //   fetchBatchQGQAObjects(ifRender);
-                        // }
+                        if (size <= allChunks.length) {
+                          var ifRender = false;
+                          fetchBatchQGQAObjects(ifRender);
+                        }
                       }
                     );
                   }
@@ -131,7 +131,6 @@ function FlashcardContainer(props) {
               }
             }
           );
-
           // }
         });
       });
@@ -144,22 +143,55 @@ function FlashcardContainer(props) {
    **/
   function readResponse(response) {
     //Data can be null if there is an error
-    // try {
     var data = response.data;
     data = JSON.parse(data.body);
     //Access values in the random ID string
     var prop_to_access = Object.keys(data)[0];
     var currObject = data[prop_to_access];
-    // } catch (err) {
-    //   alert("error occured");
-    // }
-
     return currObject;
   }
 
+  /**addForgottenChunk():
+   * Helper function that appends chunk that a user has forgotten to end of forgotChunks arr
+   * @param currChunk
+   **/
   function checkifNull(currChunk) {
     var question = currChunk.question;
     return question == null ? true : false;
+  }
+
+  /**preprocess_responses():
+   * Helper function that appends chunk that a user has forgotten to end of forgotChunks arr
+   * @param responses
+   * @param ifRender
+   **/
+  function preprocess_responses(responses, ifRender) {
+    var currBatch = [];
+    for (var response of responses) {
+      var currObject = readResponse(response);
+      console.log("in batch this is an object returned");
+      console.log(currObject);
+      var isNull = checkifNull(currObject);
+      if (isNull == false) {
+        currBatch.push(currObject);
+      }
+    }
+    //Now, save our next 4 objects to local storage
+    chrome.storage.local.get(["currObjects"], function (result) {
+      var allObjects = result.currObjects;
+      //now append our new batch to this queue
+      for (var curr of currBatch) {
+        allObjects.push(curr);
+      }
+      console.log("this is current all objects");
+      console.log(allObjects);
+      chrome.storage.local.set({ currObjects: allObjects }, function (results) {
+        if (ifRender == true) {
+          var forgotObject = false;
+          renderBatchHandler(forgotObject);
+        }
+      });
+    });
   }
 
   /**renderBatchHandler():
@@ -168,18 +200,9 @@ function FlashcardContainer(props) {
    * Passed true on init, otherwise false
    **/
   function fetchBatchQGQAObjects(ifRender) {
-    //Must pass in the next chunk-- time for chrome local storage!
-    //Now, get the nextChunk
     var BATCH_SIZE = 4;
-
     chrome.storage.local.get(["allChunks"], function (result) {
-      //This is an array of text
       var allChunks = result.allChunks;
-      var chunksLen = allChunks.length;
-      console.log(allChunks);
-
-      //error handling: if allChunks is empty, return an err
-      // if (allChunks != null) {
       chrome.storage.local.get(["idx"], function (result) {
         var idx = result.idx;
         //Get the next 4 chunks
@@ -192,10 +215,8 @@ function FlashcardContainer(props) {
         var currChunk2 = batchChunks[1];
         var currChunk3 = batchChunks[2];
         var currChunk4 = batchChunks[3];
-
         //Update our IDX
         chrome.storage.local.set({ idx: idx + 4 }, function (results) {});
-
         const ENDPOINT_STRING =
           "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/generate-single ";
         axios
@@ -212,46 +233,10 @@ function FlashcardContainer(props) {
               chunk3Resp,
               chunk4Resp
             ) {
-              // do something
               var responses = [chunk1Resp, chunk2Resp, chunk3Resp, chunk4Resp];
-              var currBatch = [];
-              for (var response of responses) {
-                //Check if the response is undefined
-                console.log("this is response");
-                console.log(response);
-
-                var currObject = readResponse(response);
-                console.log("in batch this is an object returned");
-                console.log(currObject);
-                //Check for nulls
-                var isNull = checkifNull(currObject);
-                if (isNull == false) {
-                  currBatch.push(currObject);
-                }
-              }
-
-              //Now, save our next 4 objects to local storage
-              chrome.storage.local.get(["currObjects"], function (result) {
-                var allObjects = result.currObjects;
-                //now append our new batch to this queue
-                for (var curr of currBatch) {
-                  allObjects.push(curr);
-                }
-                console.log("this is current all objects");
-                console.log(allObjects);
-                chrome.storage.local.set(
-                  { currObjects: allObjects },
-                  function (results) {
-                    if (ifRender == true) {
-                      var forgotObject = false;
-                      renderBatchHandler(forgotObject);
-                    }
-                  }
-                );
-              });
+              preprocess_responses(responses, ifRender);
             })
           )
-
           //Believe this only catches the first error, but it's something
           .catch((error) => {
             console.log("An error has occured");
@@ -259,7 +244,6 @@ function FlashcardContainer(props) {
             setErrorOccured(true);
           });
       });
-      // }
     });
   }
 
@@ -320,7 +304,7 @@ function FlashcardContainer(props) {
           ),
         ]
       ) : (
-        <div> There's an Error</div>
+        <div className="final-container"> There's an Error</div>
       )}
     </div>
   );

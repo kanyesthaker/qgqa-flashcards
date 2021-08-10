@@ -85,10 +85,6 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
       });
     });
   });
-  //get cur tab
-  // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-
-  // });
 });
 //Listener function for user changing url within the same tab
 chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
@@ -97,8 +93,7 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
       chrome.storage.local.set({ currObjects: [] }, function (results) {
         chrome.storage.local.set({ forgotChunks: [] }, function (results) {
           console.log("All callbacks set");
-          //get cur tab
-          // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+
           var tab_id = tabID;
           console.log("tab id in get all chunks");
           console.log(tab_id);
@@ -130,8 +125,6 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
       });
     });
   });
-
-  // });
 });
 
 function highlightText() {
