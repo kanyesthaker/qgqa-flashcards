@@ -172,11 +172,15 @@ function FlashcardContainer(props) {
       var allChunks = result.allChunks;
       var chunksLen = allChunks.length;
 
+      //check if allChunks has rendered yet
+      // if (allChunks != null) {
       chrome.storage.local.get(["idx"], function (result) {
         var idx = result.idx;
         //Get the next 4 chunks
         console.log("this is IDX before slice");
         console.log(idx);
+        console.log("this is ALLCHUNKS before slice");
+        console.log(allChunks);
         var batchChunks = allChunks.slice(idx, idx + BATCH_SIZE);
         var currChunk1 = batchChunks[0];
         var currChunk2 = batchChunks[1];
@@ -241,11 +245,13 @@ function FlashcardContainer(props) {
               });
             })
           )
+
           //Believe this only catches the first error, but it's something
           .catch((error) => {
             console.log(error);
           });
       });
+      // }
     });
   }
 
