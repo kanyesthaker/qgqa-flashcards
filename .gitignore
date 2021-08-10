@@ -2,3 +2,4 @@ __pycache__/
 src/models/
 .env/
 .DS_Store
+src/aws/.DS_Store
