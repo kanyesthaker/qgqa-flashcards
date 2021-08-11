@@ -9,7 +9,7 @@ def record_feedback(event, context):
 		"timestamp":event["timestamp"],
 		"question":event["question"],
 		"answer":event["answer"],
-		"src":event["src"],
+		"context":event["context"],
 	})
 
 	return True

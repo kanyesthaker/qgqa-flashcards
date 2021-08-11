@@ -1,3 +1,53 @@
+/* global chrome */
+
+const getObjectFromLocalStorage = async function (key) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.get(key, function (value) {
+        resolve(value[key]);
+      });
+    } catch (ex) {
+      // chrome.storage.local.set({ errorOccured: true }, function () {
+      reject(ex);
+      // });
+      // reject(ex);
+    }
+  });
+};
+
+/**
+ * Save Object in Chrome's Local StorageArea
+ * @param {*} obj
+ */
+const saveObjectInLocalStorage = async function (obj) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.set(obj, function () {
+        resolve();
+      });
+    } catch (ex) {
+      reject(ex);
+    }
+  });
+};
+
+/**
+ * Removes Object from Chrome Local StorageArea.
+ *
+ * @param {string or array of string keys} keys
+ */
+const removeObjectFromLocalStorage = async function (keys) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.remove(keys, function () {
+        resolve();
+      });
+    } catch (ex) {
+      reject(ex);
+    }
+  });
+};
+
 // background.js
 chrome.commands.onCommand.addListener((command) => {
   console.log(`Command: ${command}`);
@@ -12,7 +62,7 @@ function getAllChunks() {
   function preprocess_chunk(text_in_div) {
     //Replace all with {} [] <>
     var pat = /(\{.*?\})|(\[.*?\])|(<.*?>)/g;
-    ret = text_in_div.replaceAll(pat, "");
+    var ret = text_in_div.replaceAll(pat, "");
     return ret;
   }
 
@@ -28,18 +78,16 @@ function getAllChunks() {
   for (var i = 0; i < divs.length - 1; ++i) {
     var text_in_div = divs[i].innerText;
     if (shouldBeIncluded(text_in_div)) {
-      processed_chunk = preprocess_chunk(text_in_div);
+      var processed_chunk = preprocess_chunk(text_in_div);
       arr_of_divs.push(processed_chunk);
     }
   }
 
   //-2 to generate chunks of size 3 each
   var arr_of_answer_chunks = [];
-
-  for (var i = 0; i < arr_of_divs.length - 2; ++i) {
-    var chunks = [arr_of_divs[i], arr_of_divs[i + 1], arr_of_divs[i + 2]];
+  for (var j = 0; j < arr_of_divs.length - 2; ++j) {
+    var chunks = [arr_of_divs[i], arr_of_divs[j + 1], arr_of_divs[j + 2]];
     // var chunks = [arr_of_divs[i], arr_of_divs[i + 1]]; //Batches of 2 may increase performance
-
     var answerChunk = chunks.join(" ");
     arr_of_answer_chunks.push(answerChunk);
   }
@@ -49,82 +97,85 @@ function getAllChunks() {
 
 //Listener function to get all chunks upon user navigating to new tab
 chrome.tabs.onActivated.addListener(function (activeInfo) {
-  chrome.storage.local.set({ errorOccured: false }, function (results) {
-    chrome.storage.local.set({ idx: 0 }, function (results) {
-      chrome.storage.local.set({ currObjects: [] }, function (results) {
-        chrome.storage.local.set({ forgotChunks: [] }, function (results) {
-          console.log("All callbacks set");
-          var tab_id = activeInfo.tabId;
-          console.log("tab id in get all chunks");
-          console.log(tab_id);
-          chrome.scripting.executeScript(
-            {
-              target: { tabId: tab_id },
-              function: getAllChunks,
-            },
-            (results) => {
-              console.log("all results");
-              console.log(results);
-              try {
-                var arr_of_answer_chunks = results[0];
-                arr_of_answer_chunks = arr_of_answer_chunks.result;
-                chrome.storage.local.set(
-                  { allChunks: arr_of_answer_chunks },
-                  function (results) {}
-                );
-              } catch (exception) {
-                //set some error state to be false
-                chrome.storage.local.set(
-                  { errorOccured: true },
-                  function (results) {}
-                );
-              }
-            }
+  async function handleInit(tab_id) {
+    await saveObjectInLocalStorage({ errorOccured: false });
+    await saveObjectInLocalStorage({ idx: 0 });
+    await saveObjectInLocalStorage({ currObjects: [] });
+    await saveObjectInLocalStorage({ forgotChunks: [] });
+    console.log("All callbacks set");
+    console.log("tab id in get all chunks");
+    console.log(tab_id);
+    chrome.scripting.executeScript(
+      {
+        target: { tabId: tab_id },
+        function: getAllChunks,
+      },
+      (results) => {
+        console.log("all results");
+        console.log(results);
+        try {
+          var arr_of_answer_chunks = results[0];
+          arr_of_answer_chunks = arr_of_answer_chunks.result;
+          if (arr_of_answer_chunks.length < 4) {
+            throw new Error("Webpage is not able to be parsed");
+          }
+          chrome.storage.local.set(
+            { allChunks: arr_of_answer_chunks },
+            function (results) {}
           );
-        });
-      });
-    });
-  });
+        } catch (exception) {
+          //set some error state to be false
+          chrome.storage.local.set(
+            { errorOccured: true },
+            function (results) {}
+          );
+        }
+      }
+    );
+  }
+  var tab_id = activeInfo.tabId;
+  handleInit(tab_id);
 });
-//Listener function for user changing url within the same tab
-chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
-  chrome.storage.local.set({ errorOccured: false }, function (results) {
-    chrome.storage.local.set({ idx: 0 }, function (results) {
-      chrome.storage.local.set({ currObjects: [] }, function (results) {
-        chrome.storage.local.set({ forgotChunks: [] }, function (results) {
-          console.log("All callbacks set");
 
-          var tab_id = tabID;
-          console.log("tab id in get all chunks");
-          console.log(tab_id);
-          chrome.scripting.executeScript(
-            {
-              target: { tabId: tab_id },
-              function: getAllChunks,
-            },
-            (results) => {
-              console.log("all results");
-              console.log(results);
-              try {
-                var arr_of_answer_chunks = results[0];
-                arr_of_answer_chunks = arr_of_answer_chunks.result;
-                chrome.storage.local.set(
-                  { allChunks: arr_of_answer_chunks },
-                  function (results) {}
-                );
-              } catch (exception) {
-                //set some error state to be false
-                chrome.storage.local.set(
-                  { errorOccured: true },
-                  function (results) {}
-                );
-              }
-            }
+chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
+  async function handleInit(tab_id) {
+    await saveObjectInLocalStorage({ errorOccured: false });
+    await saveObjectInLocalStorage({ idx: 0 });
+    await saveObjectInLocalStorage({ currObjects: [] });
+    await saveObjectInLocalStorage({ forgotChunks: [] });
+    console.log("All callbacks set");
+    console.log("tab id in get all chunks");
+    console.log(tab_id);
+    chrome.scripting.executeScript(
+      {
+        target: { tabId: tab_id },
+        function: getAllChunks,
+      },
+      (results) => {
+        console.log("all results");
+        console.log(results);
+        try {
+          var arr_of_answer_chunks = results[0];
+          arr_of_answer_chunks = arr_of_answer_chunks.result;
+          if (arr_of_answer_chunks.length < 4) {
+            throw new Error("Webpage is not able to be parsed");
+          }
+          chrome.storage.local.set(
+            { allChunks: arr_of_answer_chunks },
+            function (results) {}
           );
-        });
-      });
-    });
-  });
+        } catch (exception) {
+          //set some error state to be false
+          chrome.storage.local.set(
+            { errorOccured: true },
+            function (results) {}
+          );
+        }
+      }
+    );
+  }
+  var tab_id = tabID;
+  handleInit(tab_id);
 });
 
 function highlightText() {
@@ -144,7 +195,7 @@ function highlightText() {
     console.log(truncated_context);
 
     //Now, execute our div script
-    match_string = truncated_context;
+    var match_string = truncated_context;
     for (var i = 0; i < divs.length - 1; ++i) {
       //Check if this div has the text content I want
       var text_in_div = divs[i].innerText;
@@ -174,21 +225,26 @@ function highlightText() {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.storedCurrChunk?.newValue) {
-    //inject the script
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      var tab_id = tabs[0].id;
-      console.log(tab_id);
-      //Execute the script
-      chrome.scripting.executeScript(
-        {
-          target: { tabId: tab_id },
-          function: highlightText,
-        },
-        (results) => {
-          console.log("i ran");
-          console.log(results);
-        }
-      );
-    });
+    async function onHighlight() {
+      //inject the script
+      // var storedCurrChunk = await getObjectFromLocalStorage("storedCurrChunk");
+
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        var tab_id = tabs[0].id;
+        console.log(tab_id);
+        //Execute the script
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: tab_id },
+            function: highlightText,
+          },
+          (results) => {
+            console.log("i ran");
+            console.log(results);
+          }
+        );
+      });
+    }
+    onHighlight();
   }
 });

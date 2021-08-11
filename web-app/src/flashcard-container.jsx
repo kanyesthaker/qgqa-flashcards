@@ -8,19 +8,38 @@ import Reload from "./icons/reload-sharp.svg";
 import axios from "axios";
 import Skeleton from "react-loading-skeleton";
 
+import {
+  getObjectFromLocalStorage,
+  saveObjectInLocalStorage,
+  removeObjectFromLocalStorage,
+} from "./chrome-storage.js";
+
 /**
+ * Documentation updated Aug 10 2021
  * FILE HEADER: This stateful flashcard-container does the following
  * related to rendering flashcards:
- * 1. Accesses chrome.tabs API to find the user's current TAB URL
- * 2. POSTs to endpoint to receive flashcards object
- * 3. Maintains an internal queue to keep track of which flashcard to display,
- * initialized in initFlashcards() and updated in handleClick()
- * 4. Persists this queue in chrome.storage.local in order to have a user's position
- * in the queue persist whether extension is closed or opened.
- * @param question - a question string passed as prop to flashcard.js
- * @param answer - a answer string passed as prop to flashcard.js
- * @param onPress - a custom onclick function passed to flashcard.js to propagate state to children
- * @param key - an arbitrary counter passed to flashcard.js used to force a render to display new flashcards
+ * 1. Calls UseEffect() a single time on init of the app to fetchBatchQGQAObjects(), if no errors
+ * 2. Sends batch requests of 4 to Sagemaker endpoint with chunks parsed in background.js 
+ * 3. Renders flashcard in renderBatchHandler()
+ * 4. Maintains an internal queue titled @param currObjects to keep track of which flashcard to display.  
+ * 4. Maintains internal queue @param currForgotChunks to keep track of chunks that were forgotten to render
+ * 5. Determines whether to render a flashcard, error message, or message when all flashcards are exhausted
+ * 
+ * LOCAL STORAGE OBJECTS
+ * @param forgotChunks - internal queue of current all forgotCunks
+ * @param currObjects - internal queue of current chunks received by the model and not yet rendered
+ * @param allChunks - parsed and preprocessed array of chunks 
+ * @param idx - int idx counter used to slice into allChunks to get the next batch of 4 objects.
+ * @param errorOccured - bool set in background.js if error occured
+ *
+ * PARAMS PASSED TO FLASHCARDS
+ * @param key
+ * @param question
+ * @param answer
+ * @param reportAnswer
+ * @param onRemembered
+ * @param onForgot
+
  **/
 
 //ESSENTIAL: Let ESLint know that we are accessing Chrome browser methods
@@ -29,7 +48,6 @@ import Skeleton from "react-loading-skeleton";
 function FlashcardContainer(props) {
   const [isMoreFlashcards, setisMoreFlashcards] = useState(true);
   const [errorOccured, setErrorOccured] = useState(false);
-
   const [question, setQuestion] = useState("");
   //Workaround to render this at the same time
   const [answer, setAnswer] = useState("");
@@ -54,87 +72,59 @@ function FlashcardContainer(props) {
    * Helper function that appends chunk that a user has forgotten to end of forgotChunks arr
    * @param currChunk
    **/
-  function addForgottenChunk(currChunk) {
-    chrome.storage.local.get(["forgotChunks"], function (forgotChunks_result) {
-      var forgotChunks = forgotChunks_result.forgotChunks;
-      console.log("this is forgot chunk in func");
-      console.log(forgotChunks);
-      var len = forgotChunks.push(currChunk);
-      chrome.storage.local.set(
-        { forgotChunks: forgotChunks },
-        function (results) {}
-      );
-    });
+  async function addForgottenChunk(currChunk) {
+    var forgotChunks = await getObjectFromLocalStorage("forgotChunks");
+    await saveObjectInLocalStorage({ forgotChunks: forgotChunks });
+    console.log("this is forgot chunk in func");
+    console.log(forgotChunks);
+    var len = forgotChunks.push(currChunk);
+    await saveObjectInLocalStorage({ forgotChunks: forgotChunks });
   }
 
   /**renderBatchHandler():
    * TODO: Write documentation
    * @param forgotObject bool flag that represents if user has forgotten current card or not
    **/
-  function renderBatchHandler(forgotObject) {
+  async function renderBatchHandler(forgotObject) {
     console.log("render batch ran");
     var BATCH_SIZE = 4;
+    var data = await getObjectFromLocalStorage("currObjects");
+    var idx = await getObjectFromLocalStorage("idx");
+    var allChunks = await getObjectFromLocalStorage("allChunks");
+    var currForgotChunks = await getObjectFromLocalStorage("forgotChunks");
 
-    //Used to be newCurrObject
-    chrome.storage.local.get(["currObjects"], function (currObjects_result) {
-      chrome.storage.local.get(["idx"], function (idx_result) {
-        chrome.storage.local.get(["allChunks"], function (allChunks_result) {
-          chrome.storage.local.get(
-            ["forgotChunks"],
-            function (forgotChunks_result) {
-              var data = currObjects_result.currObjects;
-              var idx = idx_result.idx;
-              var allChunks = allChunks_result.allChunks;
-              var currForgotChunks = forgotChunks_result.forgotChunks;
+    console.log("this is currObjects");
+    console.log(data);
 
-              console.log("this is currObjects");
-              console.log(data);
+    var currChunk = data.shift();
+    if (currChunk != null) {
+      //If we set our forgot flag, then append this chunk to the end of the queue
+      if (forgotObject == true) {
+        addForgottenChunk(currChunk);
+      }
+      //Set currObjects to its new size
+      await saveObjectInLocalStorage({ currObjects: data });
+      await saveObjectInLocalStorage({ storedCurrChunk: currChunk });
+      //Update currChunk so that we can highlight, this triggers our opportunity to highlight
+      renderFlashcard(currChunk);
+      //Decide to fetch more or not
+      var size = idx + BATCH_SIZE; //ex) we're in idx 8 + 4 =12, there are 13 elements in allchunks, no more requests
+      if (size <= allChunks.length) {
+        var ifRender = false;
+        fetchBatchQGQAObjects(ifRender);
+      }
+    } else if (currForgotChunks.length != 0) {
+      console.log("cfc");
+      console.log(currForgotChunks);
+      var forgottenChunk = currForgotChunks.shift();
+      await saveObjectInLocalStorage({ forgotChunks: currForgotChunks });
+      renderFlashcard(forgottenChunk);
+    } else {
+      console.log("I am empty!");
+      setisMoreFlashcards(false);
+    }
 
-              var currChunk = data.shift();
-              if (currChunk != null) {
-                //If we set our forgot flag, then append this chunk to the end of the queue
-                if (forgotObject == true) {
-                  addForgottenChunk(currChunk);
-                }
-                //Set currObjects to its new size
-                chrome.storage.local.set(
-                  { currObjects: data },
-                  function (results) {
-                    //Update currChunk so that we can highlight, this triggers our opportunity to highlight
-                    chrome.storage.local.set(
-                      { storedCurrChunk: currChunk },
-                      function (results) {
-                        renderFlashcard(currChunk);
-                        //Decide to fetch more or not
-                        var size = idx + BATCH_SIZE; //ex) we're in idx 8 + 4 =12, there are 13 elements in allchunks, no more requests
-                        if (size <= allChunks.length) {
-                          var ifRender = false;
-                          fetchBatchQGQAObjects(ifRender);
-                        }
-                      }
-                    );
-                  }
-                );
-              } else if (currForgotChunks.length != 0) {
-                console.log("cfc");
-                console.log(currForgotChunks);
-                var forgottenChunk = currForgotChunks.shift();
-                chrome.storage.local.set(
-                  { forgotChunks: currForgotChunks },
-                  function (results) {
-                    renderFlashcard(forgottenChunk);
-                  }
-                );
-              } else {
-                console.log("I am empty!");
-                setisMoreFlashcards(false);
-              }
-            }
-          );
-          // }
-        });
-      });
-    });
+    // }
   }
 
   /**readResponse():
@@ -165,7 +155,7 @@ function FlashcardContainer(props) {
    * @param responses
    * @param ifRender
    **/
-  function preprocess_responses(responses, ifRender) {
+  async function preprocess_responses(responses, ifRender) {
     var currBatch = [];
     for (var response of responses) {
       var currObject = readResponse(response);
@@ -177,21 +167,20 @@ function FlashcardContainer(props) {
       }
     }
     //Now, save our next 4 objects to local storage
-    chrome.storage.local.get(["currObjects"], function (result) {
-      var allObjects = result.currObjects;
-      //now append our new batch to this queue
-      for (var curr of currBatch) {
-        allObjects.push(curr);
-      }
-      console.log("this is current all objects");
-      console.log(allObjects);
-      chrome.storage.local.set({ currObjects: allObjects }, function (results) {
-        if (ifRender == true) {
-          var forgotObject = false;
-          renderBatchHandler(forgotObject);
-        }
-      });
-    });
+    var allObjects = await getObjectFromLocalStorage("currObjects");
+
+    //now append our new batch to this queue
+    for (var curr of currBatch) {
+      allObjects.push(curr);
+    }
+    console.log("this is current all objects");
+    console.log(allObjects);
+    await saveObjectInLocalStorage({ currObjects: allObjects });
+
+    if (ifRender == true) {
+      var forgotObject = false;
+      renderBatchHandler(forgotObject);
+    }
   }
 
   /**renderBatchHandler():
@@ -199,58 +188,60 @@ function FlashcardContainer(props) {
    * @param ifRender bool flag passed in to determine if function should call renderBatchHandler
    * Passed true on init, otherwise false
    **/
-  function fetchBatchQGQAObjects(ifRender) {
+  async function fetchBatchQGQAObjects(ifRender) {
     var BATCH_SIZE = 4;
-    chrome.storage.local.get(["allChunks"], function (result) {
-      var allChunks = result.allChunks;
-      chrome.storage.local.get(["idx"], function (result) {
-        var idx = result.idx;
-        //Get the next 4 chunks
-        console.log("this is IDX before slice");
-        console.log(idx);
-        console.log("this is ALLCHUNKS before slice");
-        console.log(allChunks);
-        var batchChunks = allChunks.slice(idx, idx + BATCH_SIZE);
-        var currChunk1 = batchChunks[0];
-        var currChunk2 = batchChunks[1];
-        var currChunk3 = batchChunks[2];
-        var currChunk4 = batchChunks[3];
-        //Update our IDX
-        chrome.storage.local.set({ idx: idx + 4 }, function (results) {});
-        const ENDPOINT_STRING =
-          "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/generate-single ";
-        axios
-          .all([
-            axios.post(ENDPOINT_STRING, { ctx: currChunk1 }),
-            axios.post(ENDPOINT_STRING, { ctx: currChunk2 }),
-            axios.post(ENDPOINT_STRING, { ctx: currChunk3 }),
-            axios.post(ENDPOINT_STRING, { ctx: currChunk4 }),
-          ])
-          .then(
-            axios.spread(function (
-              chunk1Resp,
-              chunk2Resp,
-              chunk3Resp,
-              chunk4Resp
-            ) {
-              var responses = [chunk1Resp, chunk2Resp, chunk3Resp, chunk4Resp];
-              preprocess_responses(responses, ifRender);
-            })
-          )
-          //Believe this only catches the first error, but it's something
-          .catch((error) => {
-            console.log("An error has occured");
-            console.log(error);
-            setErrorOccured(true);
-          });
+    //Check for null value of allchunks here
+    try {
+      var allChunks = await getObjectFromLocalStorage("allChunks");
+      var idx = await getObjectFromLocalStorage("idx");
+    } catch (error) {
+      console.log("An error has occured");
+      console.log(error);
+      setErrorOccured(true);
+    }
+    //Get the next 4 chunks
+    console.log("this is IDX before slice");
+    console.log(idx);
+    console.log("this is ALLCHUNKS before slice");
+    console.log(allChunks);
+    var batchChunks = allChunks.slice(idx, idx + BATCH_SIZE);
+    var currChunk1 = batchChunks[0];
+    var currChunk2 = batchChunks[1];
+    var currChunk3 = batchChunks[2];
+    var currChunk4 = batchChunks[3];
+    //Update our IDX
+    await saveObjectInLocalStorage({ idx: idx + 4 });
+
+    const ENDPOINT_STRING =
+      "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/generate-single ";
+    axios
+      .all([
+        axios.post(ENDPOINT_STRING, { ctx: currChunk1 }),
+        axios.post(ENDPOINT_STRING, { ctx: currChunk2 }),
+        axios.post(ENDPOINT_STRING, { ctx: currChunk3 }),
+        axios.post(ENDPOINT_STRING, { ctx: currChunk4 }),
+      ])
+      .then(
+        axios.spread(function (chunk1Resp, chunk2Resp, chunk3Resp, chunk4Resp) {
+          var responses = [chunk1Resp, chunk2Resp, chunk3Resp, chunk4Resp];
+          preprocess_responses(responses, ifRender);
+        })
+      )
+      //Believe this only catches the first error, but it's something
+      .catch((error) => {
+        console.log("An error has occured");
+        console.log(error);
+        setErrorOccured(true);
       });
-    });
   }
 
   //Runs a single time upon load of component
   useEffect(() => {
+    //need to use traditional methods here
     chrome.storage.local.get(["errorOccured"], function (error_occured_result) {
       var errorOccured = error_occured_result.errorOccured;
+      console.log("this is error on init");
+      console.log(errorOccured);
       var ifRender = true;
       errorOccured ? setErrorOccured(true) : fetchBatchQGQAObjects(ifRender);
     });
@@ -295,7 +286,6 @@ function FlashcardContainer(props) {
               reportAnswer={reportAnswer}
               onRemembered={handleEventRemember}
               onForgot={handleEventForgot}
-              isMoreFlashcards={isMoreFlashcards}
             ></Flashcard>
           ) : (
             <div className="final-container">
@@ -304,7 +294,10 @@ function FlashcardContainer(props) {
           ),
         ]
       ) : (
-        <div className="final-container"> There's an Error</div>
+        <div className="final-container">
+          {" "}
+          Ferrett can't read this type of page. Try again on another site!
+        </div>
       )}
     </div>
   );
