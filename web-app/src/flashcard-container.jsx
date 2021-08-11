@@ -54,6 +54,8 @@ function FlashcardContainer(props) {
   const [context, setContext] = useState("");
 
   const [reportAnswer, setReportAnswer] = useState("");
+  const [dummyProp, setDummyProp] = useState(false);
+
   const [key, setKey] = useState(1);
 
   /**renderFlashcard():
@@ -70,6 +72,7 @@ function FlashcardContainer(props) {
 
     setKey(key + 1);
     setReportAnswer("Report Answer");
+    setDummyProp(true);
   }
 
   /**addForgottenChunk():
@@ -92,15 +95,17 @@ function FlashcardContainer(props) {
   async function renderBatchHandler(forgotObject) {
     console.log("render batch ran");
     var BATCH_SIZE = 4;
+    var allChunks = await getObjectFromLocalStorage("allChunks");
     var data = await getObjectFromLocalStorage("currObjects");
     var idx = await getObjectFromLocalStorage("idx");
-    var allChunks = await getObjectFromLocalStorage("allChunks");
     var currForgotChunks = await getObjectFromLocalStorage("forgotChunks");
 
     console.log("this is currObjects");
     console.log(data);
 
     var currChunk = data.shift();
+    //if idx has not reached the end?
+
     if (currChunk != null) {
       //If we set our forgot flag, then append this chunk to the end of the queue
       if (forgotObject == true) {
@@ -123,7 +128,7 @@ function FlashcardContainer(props) {
       var forgottenChunk = currForgotChunks.shift();
       await saveObjectInLocalStorage({ forgotChunks: currForgotChunks });
       renderFlashcard(forgottenChunk);
-    } else {
+    } else if (idx + BATCH_SIZE > allChunks.length) {
       console.log("I am empty!");
       setisMoreFlashcards(false);
     }
@@ -289,6 +294,7 @@ function FlashcardContainer(props) {
               answer={answer}
               context={context}
               reportAnswer={reportAnswer}
+              dummyProp={dummyProp}
               onRemembered={handleEventRemember}
               onForgot={handleEventForgot}
             ></Flashcard>

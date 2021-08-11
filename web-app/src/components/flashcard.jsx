@@ -103,7 +103,7 @@ const FlashcardButtonContainer = styled.div`
   }
 `;
 
-function Flashcard_button(props) {
+function FlashcardButton(props) {
   if (props.onForgot == "") {
     var onPress = props.onRemembered;
   } else {
@@ -257,24 +257,34 @@ function Flashcard(props) {
         absolute={opacity2}
         display={display2}
       >
-        <Flashcard_button
-          text={"Forgot"}
-          color="#774F00"
-          bgColor="white"
-          onHoverBg="#FFE0A5"
-          icon={Reload}
-          onRemembered={""}
-          onForgot={props.onForgot}
-        ></Flashcard_button>
-        <Flashcard_button
-          text={"Remembered"}
-          color="#774F00"
-          bgColor="#FFD37D"
-          onHoverBg="#FFE0A5"
-          icon={Check}
-          onRemembered={props.onRemembered}
-          onForgot={""}
-        ></Flashcard_button>
+        {props.dummyProp ? (
+          <FlashcardButton
+            text={"Forgot"}
+            color="#774F00"
+            bgColor="white"
+            onHoverBg="#FFE0A5"
+            icon={Reload}
+            onRemembered={""}
+            onForgot={props.onForgot}
+            dummyProp={props.dummyProp}
+          ></FlashcardButton>
+        ) : (
+          <div></div>
+        )}
+        {props.dummyProp ? (
+          <FlashcardButton
+            text={"Remembered"}
+            color="#774F00"
+            bgColor="#FFD37D"
+            onHoverBg="#FFE0A5"
+            icon={Check}
+            onRemembered={props.onRemembered}
+            onForgot={""}
+            dummyProp={props.dummyProp}
+          ></FlashcardButton>
+        ) : (
+          <div></div>
+        )}
       </FlashcardButtonsContainer>
     </div>
   );
