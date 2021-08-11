@@ -81,7 +81,6 @@ function FlashcardContainer(props) {
    **/
   async function addForgottenChunk(currChunk) {
     var forgotChunks = await getObjectFromLocalStorage("forgotChunks");
-    await saveObjectInLocalStorage({ forgotChunks: forgotChunks });
     console.log("this is forgot chunk in func");
     console.log(forgotChunks);
     var len = forgotChunks.push(currChunk);
@@ -110,6 +109,9 @@ function FlashcardContainer(props) {
       //If we set our forgot flag, then append this chunk to the end of the queue
       if (forgotObject == true) {
         addForgottenChunk(currChunk);
+        //this can be null
+        currForgotChunks = await getObjectFromLocalStorage("forgotChunks");
+        console.log(currForgotChunks);
       }
       //Set currObjects to its new size
       await saveObjectInLocalStorage({ currObjects: data });
@@ -122,7 +124,7 @@ function FlashcardContainer(props) {
         var ifRender = false;
         fetchBatchQGQAObjects(ifRender);
       }
-    } else if (currForgotChunks.length != 0) {
+    } else if (currForgotChunks.length !== 0) {
       console.log("cfc");
       console.log(currForgotChunks);
       var forgottenChunk = currForgotChunks.shift();

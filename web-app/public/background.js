@@ -178,7 +178,7 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
   handleInit(tab_id);
 });
 
-function highlightText() {
+async function highlightText() {
   function truncate(str, nu_words) {
     return str.split(" ").splice(0, nu_words).join(" ");
   }
@@ -190,16 +190,16 @@ function highlightText() {
     var data = results.storedCurrChunk;
     var context = data.context;
     //Heuristic: truncate the context to first 6 words
-    //This returns a chunk, so get its context
     var truncated_context = truncate(context, 6);
-    console.log(truncated_context);
 
-    //Now, execute our div script
-    var match_string = truncated_context;
+    //Context is offset by 1, so we truncate first character as workaround
+    var match_string = truncated_context.substring(1);
     for (var i = 0; i < divs.length - 1; ++i) {
       //Check if this div has the text content I want
       var text_in_div = divs[i].innerText;
       console.log(text_in_div);
+      console.log(text_in_div.includes(match_string));
+
       if (text_in_div != null && text_in_div.includes(match_string)) {
         console.log("Conditional ran");
         //If we're not at the first div, then remove the last two highlighting
@@ -225,26 +225,22 @@ function highlightText() {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.storedCurrChunk?.newValue) {
-    async function onHighlight() {
-      //inject the script
-      // var storedCurrChunk = await getObjectFromLocalStorage("storedCurrChunk");
-
-      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        var tab_id = tabs[0].id;
-        console.log(tab_id);
-        //Execute the script
-        chrome.scripting.executeScript(
-          {
-            target: { tabId: tab_id },
-            function: highlightText,
-          },
-          (results) => {
-            console.log("i ran");
-            console.log(results);
-          }
-        );
-      });
-    }
-    onHighlight();
+    //inject the script
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      var tab_id = tabs[0].id;
+      console.log("this is tab id in highlighter listener");
+      console.log(tab_id);
+      //Execute the script
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: tab_id },
+          function: highlightText,
+        },
+        (results) => {
+          console.log("i ran");
+          console.log(results);
+        }
+      );
+    });
   }
 });
