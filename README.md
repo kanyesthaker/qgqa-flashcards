@@ -1,4 +1,5 @@
-# qgqa-flashcards
+# Ferret
+Ferret is a flashcard generator chrome extension. It's inspired in part by Andy Matuschak's [interactive quantum computing book](https://quantum.country/) which offers readers recall-based questions as they are reading to reinforce key concepts. Ferret uses T5 (question generation) and RoBERTa (question answering), served on an AWS Sagemaker instance, to dynamically generate questions and answers from the contents of any website, which are then rendered in a React.js extension.
 
 ## TO RUN THE FLASHCARDS LOCALLY:
 
