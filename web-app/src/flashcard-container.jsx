@@ -51,6 +51,8 @@ function FlashcardContainer(props) {
   const [question, setQuestion] = useState("");
   //Workaround to render this at the same time
   const [answer, setAnswer] = useState("");
+  const [context, setContext] = useState("");
+
   const [reportAnswer, setReportAnswer] = useState("");
   const [key, setKey] = useState(1);
 
@@ -64,6 +66,8 @@ function FlashcardContainer(props) {
     var answer = currChunk.answer;
     setQuestion(question);
     setAnswer(answer);
+    setContext(context);
+
     setKey(key + 1);
     setReportAnswer("Report Answer");
   }
@@ -283,6 +287,7 @@ function FlashcardContainer(props) {
               key={key}
               question={question}
               answer={answer}
+              context={context}
               reportAnswer={reportAnswer}
               onRemembered={handleEventRemember}
               onForgot={handleEventForgot}

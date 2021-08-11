@@ -11,6 +11,7 @@ import Check from "../icons/checkmark-sharp.svg";
 import Reload from "../icons/reload-sharp.svg";
 import styled, { css } from "styled-components";
 import Skeleton from "react-loading-skeleton";
+import axios from "axios";
 
 /**
  * Given a question, displays a flashcard
@@ -187,10 +188,30 @@ function Flashcard(props) {
   console.log("num renders before onClick");
   console.count("render");
 
-  function settoTrue() {
+  function handleReportAnswer() {
     setIfReported(true);
     console.log("num renders after onClick");
     console.count("render");
+    var ENDPOINT_STRING =
+      "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/record-feedback";
+    //Post this data
+    var timestamp = new Date();
+    timestamp = timestamp.toString();
+    axios
+      .post(ENDPOINT_STRING, {
+        timestamp: timestamp,
+        question: props.question,
+        answer: props.answer,
+        context: props.context,
+      })
+      .then(function (response) {
+        console.log("Report answer onClick POSTd");
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log("Error in report answer onClick");
+        console.log(error);
+      });
   }
 
   return (
@@ -222,7 +243,7 @@ function Flashcard(props) {
           {props.answer || <Skeleton />}
         </FlashcardAnswer>
         {!ifReported && (
-          <ReportAnswer onClick={settoTrue}>
+          <ReportAnswer onClick={handleReportAnswer}>
             {props.reportAnswer || <Skeleton />}
           </ReportAnswer>
         )}
