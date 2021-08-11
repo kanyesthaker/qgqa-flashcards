@@ -43,44 +43,88 @@ function getAllChunks() {
     var answerChunk = chunks.join(" ");
     arr_of_answer_chunks.push(answerChunk);
   }
-
   console.timeEnd("answer time");
   return arr_of_answer_chunks;
 }
 
-//Listener function to determine if should discard a chunk
+//Listener function to get all chunks upon user navigating to new tab
 chrome.tabs.onActivated.addListener(function (activeInfo) {
-  chrome.storage.local.set({ idx: 0 }, function (results) {
-    chrome.storage.local.set({ currObjects: [] }, function (results) {
-      chrome.storage.local.set({ forgotChunks: [] }, function (results) {
-        console.log("All callbacks set");
+  chrome.storage.local.set({ errorOccured: false }, function (results) {
+    chrome.storage.local.set({ idx: 0 }, function (results) {
+      chrome.storage.local.set({ currObjects: [] }, function (results) {
+        chrome.storage.local.set({ forgotChunks: [] }, function (results) {
+          console.log("All callbacks set");
+          var tab_id = activeInfo.tabId;
+          console.log("tab id in get all chunks");
+          console.log(tab_id);
+          chrome.scripting.executeScript(
+            {
+              target: { tabId: tab_id },
+              function: getAllChunks,
+            },
+            (results) => {
+              console.log("all results");
+              console.log(results);
+              try {
+                var arr_of_answer_chunks = results[0];
+                arr_of_answer_chunks = arr_of_answer_chunks.result;
+                chrome.storage.local.set(
+                  { allChunks: arr_of_answer_chunks },
+                  function (results) {}
+                );
+              } catch (exception) {
+                //set some error state to be false
+                chrome.storage.local.set(
+                  { errorOccured: true },
+                  function (results) {}
+                );
+              }
+            }
+          );
+        });
       });
     });
   });
-  //get cur tab
-  // chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-  var tab_id = activeInfo.tabId;
-  console.log("tab id in get all chunks");
-  console.log(tab_id);
-  chrome.scripting.executeScript(
-    {
-      target: { tabId: tab_id },
-      function: getAllChunks,
-    },
-    (results) => {
-      console.log("all results");
-      console.log(results);
+});
+//Listener function for user changing url within the same tab
+chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
+  chrome.storage.local.set({ errorOccured: false }, function (results) {
+    chrome.storage.local.set({ idx: 0 }, function (results) {
+      chrome.storage.local.set({ currObjects: [] }, function (results) {
+        chrome.storage.local.set({ forgotChunks: [] }, function (results) {
+          console.log("All callbacks set");
 
-      var arr_of_answer_chunks = results[0];
-      arr_of_answer_chunks = arr_of_answer_chunks.result;
-
-      chrome.storage.local.set(
-        { allChunks: arr_of_answer_chunks },
-        function (results) {}
-      );
-    }
-  );
-  // });
+          var tab_id = tabID;
+          console.log("tab id in get all chunks");
+          console.log(tab_id);
+          chrome.scripting.executeScript(
+            {
+              target: { tabId: tab_id },
+              function: getAllChunks,
+            },
+            (results) => {
+              console.log("all results");
+              console.log(results);
+              try {
+                var arr_of_answer_chunks = results[0];
+                arr_of_answer_chunks = arr_of_answer_chunks.result;
+                chrome.storage.local.set(
+                  { allChunks: arr_of_answer_chunks },
+                  function (results) {}
+                );
+              } catch (exception) {
+                //set some error state to be false
+                chrome.storage.local.set(
+                  { errorOccured: true },
+                  function (results) {}
+                );
+              }
+            }
+          );
+        });
+      });
+    });
+  });
 });
 
 function highlightText() {
@@ -132,8 +176,6 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.storedCurrChunk?.newValue) {
     //inject the script
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      console.log("tab in bg");
-      console.log(tabs);
       var tab_id = tabs[0].id;
       console.log(tab_id);
       //Execute the script
