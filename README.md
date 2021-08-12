@@ -1,8 +1,14 @@
 # Ferret
 
-Ferret is a flashcard generator chrome extension. It's inspired in part by Andy Matuschak's [interactive quantum computing book](https://quantum.country/) which offers readers recall-based questions as they are reading to reinforce key concepts. Ferret uses T5 (question generation) and RoBERTa (question answering), served on an AWS Sagemaker instance, to dynamically generate questions and answers from the contents of any website, which are then rendered in a React.js extension.
+Ferret is a Chrome extension that uses NLP to generate and ask helpful recall-based questions to reinforce key concepts for almost anything you read on the internet. Ferret uses T5 (question generation) and RoBERTa (question answering), served on an AWS Sagemaker instance, to dynamically generate questions and answers from the contents of any website, which are then rendered in a React.js extension.
 
 ![Demo of our product](https://github.com/kanyesthaker/qgqa-flashcards/blob/main/demo.gif)
+
+Ferret is a helpful sidekick for when you're learning interesting, challenging content that you'd like to better remember. Perhaps you're reading about the nuts and bolts of how transformers work in NLP, skimming documentation to remember the return value of a certain Javascript method, or following class notes from an art history lecture. But how much did you really take away from that article? And how much will you honestly remember a few hours or a day later? You may take notes during a class or while reading a book, but we rarely have the time to take a step back and do this for the mountain of content that we learn online. But this mountain is an important one, and just imagine how much more you could create, and how much faster you could do it, if you could burn the content you cared about into your memory. We hope that Ferret can be the first step towards helping you get there.
+
+We hope to extend the work done in augmenting memory by researchers such as Andy Matuschak and Michael Nielsen in their work in Quantum Country, where they manually created spaced repetition flashcards to pair with content.
+
+Ferret is in alpha-release right now, which means that you'll encounter bugs and slower latency than we'd like. However, we welcome your contributions, and will actively review PRs and issues.
 
 ## Install the Extension
 
@@ -24,3 +30,9 @@ To install Ferret, you'll need to have Node.js and npm installed. To check if yo
 3. Install requirements with `pip install -r requirements.txt`
 4. Run `python -W ignore main.py online`
 5. When done, run `deactivate` to close the venv
+
+## References:
+
+1. Quantum Computing for the Very Curious https://quantum.country/qcvc
+2. T5-Base-E2E-QG https://huggingface.co/valhalla/t5-base-e2e-qg
+3. RoBERTa-Base-SQuAD2 https://huggingface.co/deepset/roberta-base-squad2
