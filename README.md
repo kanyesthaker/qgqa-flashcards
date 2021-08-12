@@ -1,32 +1,21 @@
-# qgqa-flashcards
+# Ferret
+Ferret is a flashcard generator chrome extension. It's inspired in part by Andy Matuschak's [interactive quantum computing book](https://quantum.country/) which offers readers recall-based questions as they are reading to reinforce key concepts. Ferret uses T5 (question generation) and RoBERTa (question answering), served on an AWS Sagemaker instance, to dynamically generate questions and answers from the contents of any website, which are then rendered in a React.js extension.
 
-## TO RUN THE FLASHCARDS LOCALLY:
+## Install the Extension
+To install Ferret, you'll need to have Node.js and npm installed. To check if you have npm, type `npm -v` into your terminal (it should print out a version number). If this doesn't work, use `brew install node` and it should install the required tools. 
+1. Clone this repo using `git clone git@github.com:kanyesthaker/qgqa-flashcards.git`
+2. Navigate to the `web-app` folder
+3. Run `npm install` to require the required `node-modules`
+4. Run `npm run build` -- this will build a production version of the app and create a `build` folder in the `web-app` folder
+5. Open Google Chrome and type `chrome://extensions` in the search bar (alternatively, right click the puzzle piece icon in the top right and click on "Manage Extensions")
+6. Select "Load unpacked" in the top left
+7. Select the `build` folder you just created
+Congrats! You now have Ferret installed. If you ever need to "re-build" the application, simply repeat steps 4-7. 
 
-1. Create virtual environment with `python -m venv .env`
-2. Start virtual environment with `source .env/bin/activate`
-3. Install requirements with `pip install -r requirements.txt`
-4. Run `python -W ignore main.py` (the flag supresses pytorch warnings)
-5. When done, run `deactivate` to close the venv
-
-## TO RUN THE FLASHCARDS USING AWS DEPLOYED MODELS:
+## To run only the backend functions using the terminal interactive session:
 
 1. Create virtual environment with `python -m venv .env`
 2. Start virtual environment with `source .env/bin/activate`
 3. Install requirements with `pip install -r requirements.txt`
 4. Run `python -W ignore main.py online`
 5. When done, run `deactivate` to close the venv
-
-## TO LAUNCH UPDATES TO AWS LAMBDA:
-
-1. Create your new lambda function in `aws/main.py`
-2. Run the deployment shell script `sh deploy.sh` with the following flags: `-n NAME` the desired name of the function in AWS, `-h HANDLER` the location of the function; for example the function `test(event, context)` in `main.py` would be handled as `main.test`, and `-d DEPLOY` either "deploy" or "update" depending on whether it is the first invocation of that function. Follow this with a space-separated list of all the files that are required for the function. An example is shown:
-3. `sh deploy.sh -n segment-text -h main.segment_text -d deploy main.py pipelines_sagemaker.py lambdaflashcards.py scraper.py __init__.py requirements.txt`
-
-## TO BUILD AND DEPLOY CHROME EXTENSION LOCALLY:
-
-1. In the web-app folder, run `npm install` to get needed dependencies, then `npm run build` to build a production version of the app.
-2. In Chrome, click on the top right jigsaw puzzle icon and navigate to "Manage Extensions"
-3. Toggle Developer Mode on in the top right
-4. Select "Load unpacked" in top left
-5. Upload the production "build" folder to Chrome.
-   The Chrome extension is now able to be run locally!
