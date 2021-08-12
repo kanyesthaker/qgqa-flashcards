@@ -250,7 +250,10 @@ function Flashcard(props) {
           </ReportAnswer>
         )}
         {ifReported && (
-          <ReportedAnswer>Thank you for your feedback</ReportedAnswer>
+          <ReportedAnswer>
+            {props.reportAnswer || <Skeleton />}
+            Thank you for your feedback
+          </ReportedAnswer>
         )}
       </FlashcardAnswerContainer>
 
