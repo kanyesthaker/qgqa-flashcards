@@ -60,6 +60,7 @@ const ReportAnswer = styled.div`
   padding-top: 8px;
   padding-bottom: 16px;
   cursor: pointer;
+  display: inline-block;
 
   opacity: ${(props) => props.opacity};
   position: ${(props) => props.absolute};
@@ -73,6 +74,7 @@ const ReportedAnswer = styled.div`
   padding-top: 8px;
   font-size: 10px;
   color: #6f6f6f;
+  display: inline-block;
 
   opacity: ${(props) => props.opacity};
   position: ${(props) => props.absolute};
