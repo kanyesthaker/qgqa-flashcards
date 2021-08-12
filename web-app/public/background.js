@@ -86,7 +86,7 @@ function getAllChunks() {
   //-2 to generate chunks of size 3 each
   var arr_of_answer_chunks = [];
   for (var j = 0; j < arr_of_divs.length - 2; ++j) {
-    var chunks = [arr_of_divs[i], arr_of_divs[j + 1], arr_of_divs[j + 2]];
+    var chunks = [arr_of_divs[j], arr_of_divs[j + 1], arr_of_divs[j + 2]];
     // var chunks = [arr_of_divs[i], arr_of_divs[i + 1]]; //Batches of 2 may increase performance
     var answerChunk = chunks.join(" ");
     arr_of_answer_chunks.push(answerChunk);
@@ -102,9 +102,9 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     await saveObjectInLocalStorage({ idx: 0 });
     await saveObjectInLocalStorage({ currObjects: [] });
     await saveObjectInLocalStorage({ forgotChunks: [] });
-    console.log("All callbacks set");
-    console.log("tab id in get all chunks");
-    console.log(tab_id);
+    // console.log("onActivated fired");
+    // console.log("tab id in get all chunks");
+    // console.log(tab_id);
     chrome.scripting.executeScript(
       {
         target: { tabId: tab_id },
@@ -143,9 +143,12 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
     await saveObjectInLocalStorage({ idx: 0 });
     await saveObjectInLocalStorage({ currObjects: [] });
     await saveObjectInLocalStorage({ forgotChunks: [] });
-    console.log("All callbacks set");
+    console.log("onUpdated fired");
+
     console.log("tab id in get all chunks");
     console.log(tab_id);
+    console.log(changeInfo);
+
     chrome.scripting.executeScript(
       {
         target: { tabId: tab_id },
