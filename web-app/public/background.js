@@ -102,6 +102,8 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     await saveObjectInLocalStorage({ idx: 0 });
     await saveObjectInLocalStorage({ currObjects: [] });
     await saveObjectInLocalStorage({ forgotChunks: [] });
+    await saveObjectInLocalStorage({ ifCleanUp: false });
+
     // console.log("onActivated fired");
     // console.log("tab id in get all chunks");
     // console.log(tab_id);
@@ -242,6 +244,39 @@ chrome.storage.onChanged.addListener((changes, area) => {
         {
           target: { tabId: tab_id },
           function: highlightText,
+        },
+        (results) => {
+          console.log("i ran");
+          console.log(results);
+        }
+      );
+    });
+  }
+});
+
+function cleanHighlightText() {
+  console.log("Helper cleanup ran");
+  // Get all p tags
+  const divs = [...document.querySelectorAll("p")];
+  for (var i = 0; i < divs.length - 1; ++i) {
+    divs[i].style["background-color"] = "transparent";
+    // var text_in_div = divs[i].innerText;
+    // console.log(text_in_div);
+  }
+}
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.ifCleanUp?.newValue) {
+    //inject the script
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      var tab_id = tabs[0].id;
+      console.log("this is tab id in highlighter listener");
+      console.log(tab_id);
+      //Execute the script
+      chrome.scripting.executeScript(
+        {
+          target: { tabId: tab_id },
+          function: cleanHighlightText,
         },
         (results) => {
           console.log("i ran");

@@ -141,6 +141,7 @@ function FlashcardContainer(props) {
     } else if (idx + BATCH_SIZE > allChunks.length && isLoading === false) {
       console.log("I am empty!");
       setisMoreFlashcards(false);
+      //Set handler to clean up flashcards
     }
 
     // }
@@ -296,6 +297,11 @@ function FlashcardContainer(props) {
     //Pass in a flag to append currObject back to end of queue
     var forgotObject = true;
     renderBatchHandler(forgotObject);
+  }
+
+  //Global check
+  if (!isMoreFlashcards || errorOccured) {
+    chrome.storage.local.set({ ifCleanUp: true }, function () {});
   }
 
   return (

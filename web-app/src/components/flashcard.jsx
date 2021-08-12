@@ -127,56 +127,6 @@ function FlashcardButton(props) {
   );
 }
 
-// function Flashcard_container(props) {
-//   const [ifReported, setIfReported] = useState(false);
-//   const [tableKey, setTableKey] = useState(1);
-
-//   return (
-//     // <div className="Flashcard-answer-container" style={mystyle}>
-//     <React.Fragment>
-//       <FlashcardAnswerContainer
-//         opacity={props.opacity}
-//         absolute={props.absolute}
-//       >
-//         <FlashcardAnswer opacity={props.opacity} absolute={props.absolute}>
-//           {props.answer || <Skeleton />}
-//         </FlashcardAnswer>
-//         {ifReported ? (
-//           <ReportedAnswer>Thank you for your feedback</ReportedAnswer>
-//         ) : (
-//           <ReportAnswer onClick={reportedAnswer}>
-//             {props.reportAnswer || <Skeleton />}
-//           </ReportAnswer>
-//         )}
-//       </FlashcardAnswerContainer>
-
-//       <FlashcardButtonsContainer
-//         opacity={props.opacity}
-//         absolute={props.absolute}
-//       >
-//         <Flashcard_button
-//           text={"Forgot"}
-//           color="#774F00"
-//           bgColor="white"
-//           onHoverBg="#FFE0A5"
-//           icon={Reload}
-//           onRemembered={""}
-//           onForgot={props.onForgot}
-//         ></Flashcard_button>
-//         <Flashcard_button
-//           text={"Remembered"}
-//           color="#774F00"
-//           bgColor="#FFD37D"
-//           onHoverBg="#FFE0A5"
-//           icon={Check}
-//           onRemembered={props.onRemembered}
-//           onForgot={""}
-//         ></Flashcard_button>
-//       </FlashcardButtonsContainer>
-//     </React.Fragment>
-//   );
-// }
-
 function Flashcard(props) {
   const [opacity1, setOpacity1] = useState(1);
   const [opacity2, setOpacity2] = useState(0);
