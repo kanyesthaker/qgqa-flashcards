@@ -116,6 +116,7 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
         try {
           var arr_of_answer_chunks = results[0];
           arr_of_answer_chunks = arr_of_answer_chunks.result;
+          //Store the persistent tab_id in storage
           if (arr_of_answer_chunks.length < 4) {
             throw new Error("Webpage is not able to be parsed");
           }
@@ -177,8 +178,11 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
       }
     );
   }
+
   var tab_id = tabID;
-  handleInit(tab_id);
+  if (changeInfo.status == "complete" && changeInfo.title) {
+    handleInit(tab_id);
+  }
 });
 
 async function highlightText() {

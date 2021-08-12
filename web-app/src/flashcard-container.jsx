@@ -52,6 +52,7 @@ function FlashcardContainer(props) {
   //Workaround to render this at the same time
   const [answer, setAnswer] = useState("");
   const [context, setContext] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [reportAnswer, setReportAnswer] = useState("");
   const [dummyProp, setDummyProp] = useState(false);
@@ -119,7 +120,14 @@ function FlashcardContainer(props) {
       //Update currChunk so that we can highlight, this triggers our opportunity to highlight
       renderFlashcard(currChunk);
       //Decide to fetch more or not
+      console.log("this is allChunks len in render");
+      console.log(allChunks.length);
+      console.log("this is idx len in render");
+      console.log(idx);
+
       var size = idx + BATCH_SIZE; //ex) we're in idx 8 + 4 =12, there are 13 elements in allchunks, no more requests
+      console.log("this is size len in render");
+      console.log(size);
       if (size <= allChunks.length) {
         var ifRender = false;
         fetchBatchQGQAObjects(ifRender);
@@ -130,7 +138,7 @@ function FlashcardContainer(props) {
       var forgottenChunk = currForgotChunks.shift();
       await saveObjectInLocalStorage({ forgotChunks: currForgotChunks });
       renderFlashcard(forgottenChunk);
-    } else if (idx + BATCH_SIZE > allChunks.length) {
+    } else if (idx + BATCH_SIZE > allChunks.length && isLoading === false) {
       console.log("I am empty!");
       setisMoreFlashcards(false);
     }
@@ -166,7 +174,7 @@ function FlashcardContainer(props) {
    * @param responses
    * @param ifRender
    **/
-  async function preprocess_responses(responses, ifRender) {
+  async function preprocess_responses(responses, idx, ifRender) {
     var currBatch = [];
     for (var response of responses) {
       var currObject = readResponse(response);
@@ -216,15 +224,18 @@ function FlashcardContainer(props) {
     console.log("this is ALLCHUNKS before slice");
     console.log(allChunks);
     var batchChunks = allChunks.slice(idx, idx + BATCH_SIZE);
+    await saveObjectInLocalStorage({ idx: idx + 4 });
+
     var currChunk1 = batchChunks[0];
     var currChunk2 = batchChunks[1];
     var currChunk3 = batchChunks[2];
     var currChunk4 = batchChunks[3];
     //Update our IDX
-    await saveObjectInLocalStorage({ idx: idx + 4 });
 
     const ENDPOINT_STRING =
       "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/generate-single ";
+    setIsLoading(true);
+
     axios
       .all([
         axios.post(ENDPOINT_STRING, { ctx: currChunk1 }),
@@ -235,7 +246,8 @@ function FlashcardContainer(props) {
       .then(
         axios.spread(function (chunk1Resp, chunk2Resp, chunk3Resp, chunk4Resp) {
           var responses = [chunk1Resp, chunk2Resp, chunk3Resp, chunk4Resp];
-          preprocess_responses(responses, ifRender);
+          preprocess_responses(responses, idx, ifRender);
+          setIsLoading(false);
         })
       )
       //Believe this only catches the first error, but it's something
@@ -243,6 +255,7 @@ function FlashcardContainer(props) {
         console.log("An error has occured");
         console.log(error);
         setErrorOccured(true);
+        setIsLoading(false);
       });
   }
 
