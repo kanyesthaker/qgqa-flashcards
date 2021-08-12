@@ -4,7 +4,11 @@ Ferret is a Chrome extension that uses NLP to generate and ask helpful recall-ba
 
 ![Demo of our product](https://github.com/kanyesthaker/qgqa-flashcards/blob/main/demo.gif)
 
-Ferret is a helpful sidekick for when you're learning interesting, challenging content that you'd like to better remember. Perhaps you're reading about the nuts and bolts of how transformers work in NLP, skimming documentation to remember the return value of a certain Javascript method, or following class notes from an art history lecture. But how much did you really take away from that article? And how much will you honestly remember a few hours or a day later? You may take notes during a class or while reading a book, but we rarely have the time to take a step back and do this for the mountain of content that we learn online. But this mountain is an important one, and just imagine how much more you could create, and how much faster you could do it, if you could burn the content you cared about into your memory. We hope that Ferret can be the first step towards helping you get there.
+## Motivation
+
+Ferret is a helpful sidekick for when you're learning interesting, challenging content that you'd like to better remember. Perhaps you're reading about the nuts and bolts of how transformers work in NLP, skimming documentation to remember the return value of a certain Javascript method, or following class notes from an art history lecture. But how much did you really take away from that article? And how much will you honestly remember a few hours or a day later?
+
+You may take notes during a class or while reading a book, but we rarely have the time to take a step back and do this for the mountain of content that we learn online. We're excited to imagine how much more you could create if you could burn the content you cared about into your memory. We hope that Ferret can be the first step towards helping you get there.
 
 We hope to extend the work done in augmenting memory by researchers such as Andy Matuschak and Michael Nielsen in their work in Quantum Country, where they manually created spaced repetition flashcards to pair with content.
 
