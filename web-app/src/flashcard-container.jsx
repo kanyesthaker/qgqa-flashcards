@@ -82,8 +82,6 @@ function FlashcardContainer(props) {
    **/
   async function addForgottenChunk(currChunk) {
     var forgotChunks = await getObjectFromLocalStorage("forgotChunks");
-    console.log("this is forgot chunk in func");
-    console.log(forgotChunks);
     var len = forgotChunks.push(currChunk);
     await saveObjectInLocalStorage({ forgotChunks: forgotChunks });
   }
@@ -93,7 +91,6 @@ function FlashcardContainer(props) {
    * @param forgotObject bool flag that represents if user has forgotten current card or not
    **/
   async function renderBatchHandler(forgotObject) {
-    console.log("render batch ran");
     var BATCH_SIZE = 4;
     var allChunks = await getObjectFromLocalStorage("allChunks");
     var data = await getObjectFromLocalStorage("currObjects");
@@ -120,26 +117,16 @@ function FlashcardContainer(props) {
       //Update currChunk so that we can highlight, this triggers our opportunity to highlight
       renderFlashcard(currChunk);
       //Decide to fetch more or not
-      console.log("this is allChunks len in render");
-      console.log(allChunks.length);
-      console.log("this is idx len in render");
-      console.log(idx);
-
       var size = idx + BATCH_SIZE; //ex) we're in idx 8 + 4 =12, there are 13 elements in allchunks, no more requests
-      console.log("this is size len in render");
-      console.log(size);
       if (size <= allChunks.length) {
         var ifRender = false;
         fetchBatchQGQAObjects(ifRender);
       }
     } else if (currForgotChunks.length !== 0) {
-      console.log("cfc");
-      console.log(currForgotChunks);
       var forgottenChunk = currForgotChunks.shift();
       await saveObjectInLocalStorage({ forgotChunks: currForgotChunks });
       renderFlashcard(forgottenChunk);
     } else if (idx + BATCH_SIZE > allChunks.length && isLoading === false) {
-      console.log("I am empty!");
       setisMoreFlashcards(false);
       //Set handler to clean up flashcards
     }
@@ -179,8 +166,7 @@ function FlashcardContainer(props) {
     var currBatch = [];
     for (var response of responses) {
       var currObject = readResponse(response);
-      console.log("in batch this is an object returned");
-      console.log(currObject);
+
       var isNull = checkifNull(currObject);
       if (isNull == false) {
         currBatch.push(currObject);
@@ -188,13 +174,11 @@ function FlashcardContainer(props) {
     }
     //Now, save our next 4 objects to local storage
     var allObjects = await getObjectFromLocalStorage("currObjects");
-
     //now append our new batch to this queue
     for (var curr of currBatch) {
       allObjects.push(curr);
     }
-    console.log("this is current all objects");
-    console.log(allObjects);
+
     await saveObjectInLocalStorage({ currObjects: allObjects });
 
     if (ifRender == true) {
@@ -215,15 +199,10 @@ function FlashcardContainer(props) {
       var allChunks = await getObjectFromLocalStorage("allChunks");
       var idx = await getObjectFromLocalStorage("idx");
     } catch (error) {
-      console.log("An error has occured");
-      console.log(error);
       setErrorOccured(true);
     }
     //Get the next 4 chunks
-    console.log("this is IDX before slice");
-    console.log(idx);
-    console.log("this is ALLCHUNKS before slice");
-    console.log(allChunks);
+
     var batchChunks = allChunks.slice(idx, idx + BATCH_SIZE);
     await saveObjectInLocalStorage({ idx: idx + 4 });
 
@@ -253,8 +232,6 @@ function FlashcardContainer(props) {
       )
       //Believe this only catches the first error, but it's something
       .catch((error) => {
-        console.log("An error has occured");
-        console.log(error);
         setErrorOccured(true);
         setIsLoading(false);
       });
@@ -265,8 +242,6 @@ function FlashcardContainer(props) {
     //need to use traditional methods here
     chrome.storage.local.get(["errorOccured"], function (error_occured_result) {
       var errorOccured = error_occured_result.errorOccured;
-      console.log("this is error on init");
-      console.log(errorOccured);
       var ifRender = true;
       errorOccured ? setErrorOccured(true) : fetchBatchQGQAObjects(ifRender);
     });

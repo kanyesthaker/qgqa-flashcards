@@ -54,8 +54,6 @@ chrome.commands.onCommand.addListener((command) => {
 });
 
 function getAllChunks() {
-  console.time("answer time");
-
   const divs = [...document.querySelectorAll("p")];
 
   //Helper function to process a selected chunk
@@ -91,7 +89,6 @@ function getAllChunks() {
     var answerChunk = chunks.join(" ");
     arr_of_answer_chunks.push(answerChunk);
   }
-  console.timeEnd("answer time");
   return arr_of_answer_chunks;
 }
 
@@ -113,8 +110,6 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
         function: getAllChunks,
       },
       (results) => {
-        console.log("all results");
-        console.log(results);
         try {
           var arr_of_answer_chunks = results[0];
           arr_of_answer_chunks = arr_of_answer_chunks.result;
@@ -146,11 +141,6 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
     await saveObjectInLocalStorage({ idx: 0 });
     await saveObjectInLocalStorage({ currObjects: [] });
     await saveObjectInLocalStorage({ forgotChunks: [] });
-    console.log("onUpdated fired");
-
-    console.log("tab id in get all chunks");
-    console.log(tab_id);
-    console.log(changeInfo);
 
     chrome.scripting.executeScript(
       {
@@ -206,8 +196,6 @@ async function highlightText() {
     for (var i = 0; i < divs.length - 1; ++i) {
       //Check if this div has the text content I want
       var text_in_div = divs[i].innerText;
-      console.log(text_in_div);
-      console.log(text_in_div.includes(match_string));
 
       if (text_in_div != null && text_in_div.includes(match_string)) {
         console.log("Conditional ran");
@@ -237,25 +225,20 @@ chrome.storage.onChanged.addListener((changes, area) => {
     //inject the script
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       var tab_id = tabs[0].id;
-      console.log("this is tab id in highlighter listener");
-      console.log(tab_id);
+
       //Execute the script
       chrome.scripting.executeScript(
         {
           target: { tabId: tab_id },
           function: highlightText,
         },
-        (results) => {
-          console.log("i ran");
-          console.log(results);
-        }
+        (results) => {}
       );
     });
   }
 });
 
 function cleanHighlightText() {
-  console.log("Helper cleanup ran");
   // Get all p tags
   const divs = [...document.querySelectorAll("p")];
   for (var i = 0; i < divs.length - 1; ++i) {
@@ -270,18 +253,14 @@ chrome.storage.onChanged.addListener((changes, area) => {
     //inject the script
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       var tab_id = tabs[0].id;
-      console.log("this is tab id in highlighter listener");
-      console.log(tab_id);
+
       //Execute the script
       chrome.scripting.executeScript(
         {
           target: { tabId: tab_id },
           function: cleanHighlightText,
         },
-        (results) => {
-          console.log("i ran");
-          console.log(results);
-        }
+        (results) => {}
       );
     });
   }
