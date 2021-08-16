@@ -199,10 +199,11 @@ function FlashcardContainer(props) {
       var allChunks = await getObjectFromLocalStorage("allChunks");
       var idx = await getObjectFromLocalStorage("idx");
     } catch (error) {
+      console.log("this is error in fetchBatchQGQA");
+      console.log(error);
       setErrorOccured(true);
     }
     //Get the next 4 chunks
-
     var batchChunks = allChunks.slice(idx, idx + BATCH_SIZE);
     await saveObjectInLocalStorage({ idx: idx + 4 });
 
@@ -232,6 +233,8 @@ function FlashcardContainer(props) {
       )
       //Believe this only catches the first error, but it's something
       .catch((error) => {
+        console.log("this is error in qgqa 2 after post request");
+        console.log(error);
         setErrorOccured(true);
         setIsLoading(false);
       });
@@ -239,12 +242,35 @@ function FlashcardContainer(props) {
 
   //Runs a single time upon load of component
   useEffect(() => {
-    //need to use traditional methods here
-    chrome.storage.local.get(["errorOccured"], function (error_occured_result) {
-      var errorOccured = error_occured_result.errorOccured;
+    async function init_states() {
+      var errorOccured = await getObjectFromLocalStorage("errorOccured");
+      console.log("this is error in useEffect init");
+      console.log(errorOccured);
       var ifRender = true;
       errorOccured ? setErrorOccured(true) : fetchBatchQGQAObjects(ifRender);
-    });
+      //Now, clean up and reset errorOccured to false
+      await saveObjectInLocalStorage({ errorOccured: false });
+    }
+    init_states();
+
+    // await saveObjectInLocalStorage({ errorOccured: false });
+    //   await saveObjectInLocalStorage({ idx: 0 });
+    //   await saveObjectInLocalStorage({ currObjects: [] });
+    //   await saveObjectInLocalStorage({ forgotChunks: [] });
+    //   await saveObjectInLocalStorage({ ifCleanUp: false });
+    //   await saveObjectInLocalStorage({ allChunks: [] });
+    // }
+    // init_states();
+
+    //need to use traditional methods here
+    // chrome.storage.local.get(["errorOccured"], function (error_occured_result) {
+    //   var errorOccured = error_occured_result.errorOccured;
+    //   console.log("this is error in useEffect init");
+    //   console.log(errorOccured);
+    //   var ifRender = true;
+    //   errorOccured ? setErrorOccured(true) : fetchBatchQGQAObjects(ifRender);
+    //   //Finally, set the function
+    // });
   }, []);
 
   /**handleEventRemember():

@@ -100,6 +100,7 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     await saveObjectInLocalStorage({ currObjects: [] });
     await saveObjectInLocalStorage({ forgotChunks: [] });
     await saveObjectInLocalStorage({ ifCleanUp: false });
+    await saveObjectInLocalStorage({ allChunks: [] });
 
     // console.log("onActivated fired");
     // console.log("tab id in get all chunks");
@@ -123,6 +124,8 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
           );
         } catch (exception) {
           //set some error state to be false
+          console.log("this is error in onActivated");
+          console.log(exception);
           chrome.storage.local.set(
             { errorOccured: true },
             function (results) {}
@@ -135,12 +138,16 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
   handleInit(tab_id);
 });
 
+//Upon navigating to a new URL
 chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
   async function handleInit(tab_id) {
     await saveObjectInLocalStorage({ errorOccured: false });
     await saveObjectInLocalStorage({ idx: 0 });
     await saveObjectInLocalStorage({ currObjects: [] });
     await saveObjectInLocalStorage({ forgotChunks: [] });
+    //Be sure that I need this
+    await saveObjectInLocalStorage({ ifCleanUp: false });
+    await saveObjectInLocalStorage({ allChunks: [] });
 
     chrome.scripting.executeScript(
       {
@@ -162,6 +169,9 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
           );
         } catch (exception) {
           //set some error state to be false
+          console.log("this is error in onUpdated");
+          console.log(exception);
+
           chrome.storage.local.set(
             { errorOccured: true },
             function (results) {}
@@ -172,7 +182,7 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
   }
 
   var tab_id = tabID;
-  if (changeInfo.status == "complete" && changeInfo.title) {
+  if (changeInfo.status === "complete" && changeInfo.title) {
     handleInit(tab_id);
   }
 });
