@@ -28,7 +28,6 @@
     "storage",
     "commands",
     "background",
-    "activeTab",
     "scripting"
   ],
   "host_permissions": ["*://*/*"]

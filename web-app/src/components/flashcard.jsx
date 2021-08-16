@@ -201,7 +201,7 @@ function Flashcard(props) {
         )}
         {ifReported && (
           <ReportedAnswer>
-            {props.reportAnswer || <Skeleton />}
+            {/* {props.reportAnswer || <Skeleton />} */}
             Thank you for your feedback
           </ReportedAnswer>
         )}
