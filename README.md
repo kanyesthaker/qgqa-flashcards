@@ -2,7 +2,7 @@
 
 Ferret is a Chrome extension that uses NLP to generate and ask helpful recall-based questions to reinforce key concepts for almost anything you read on the internet. Ferret uses T5 (question generation) and RoBERTa (question answering), served on an AWS Sagemaker instance, to dynamically generate questions and answers from the contents of any website, which are then rendered in a React.js extension.
 
-[Here's a link to our Chrome Extension that you can use](https://chrome.google.com/webstore/detail/ferret/mjnmolplinickaigofdpejfgfoehnlbh/)
+[Here's a link to our Chrome Extension to install](https://chrome.google.com/webstore/detail/ferret/mjnmolplinickaigofdpejfgfoehnlbh/)
 
 ![Demo of our product](https://github.com/kanyesthaker/qgqa-flashcards/blob/main/demo.gif)
 
