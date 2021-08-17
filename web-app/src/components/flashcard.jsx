@@ -107,21 +107,6 @@ const FlashcardButtonContainer = styled.div`
   }
 `;
 
-// const ProgressContainer = styled.div`
-//   border-radius: 6px;
-//   border-width: 1px;
-
-//   text-align: left;
-//   box-shadow: 0 7px 50px rgb(46 10 99 / 5%), 0 1px 1px 0.6px rgb(46 10 99 / 10%);
-//   padding-left: 20px;
-//   padding-right: 20px;
-//   padding-top: 5px;
-
-//   background-color: white;
-//   // margin-left: auto;
-//   // margin-right: auto;
-// `;
-
 function FlashcardButton(props) {
   if (props.onForgot == "") {
     var onPress = props.onRemembered;
@@ -152,17 +137,14 @@ function Flashcard(props) {
   const [display1, setDisplay1] = useState("");
   const [display2, setDisplay2] = useState("none");
   const [ifReported, setIfReported] = useState(false);
-  //test #
-  // const [percentage, setPercentage] = useState(0);
 
-  // const [key, setKey] = useState(0);'
-  console.log("num renders before onClick");
-  console.count("render");
+  // console.log("num renders before onClick");
+  // console.count("render");
 
   function handleReportAnswer() {
     setIfReported(true);
-    console.log("num renders after onClick");
-    console.count("render");
+    // console.log("num renders after onClick");
+    // console.count("render");
     var ENDPOINT_STRING =
       "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/record-feedback";
     //Post this data
@@ -188,13 +170,8 @@ function Flashcard(props) {
   return (
     <Fragment>
       {props.question == "" ? (
-        // <ProgressContainer>
-        <React.Fragment>
-          <MyProgressBar />
-        </React.Fragment>
+        <MyProgressBar />
       ) : (
-        //   <div className="Progress-text"> Loading Model </div>
-        // </ProgressContainer>
         <div className="Flashcard-container">
           <div className="Flashcard-question">
             {props.question || <Skeleton></Skeleton>}{" "}
