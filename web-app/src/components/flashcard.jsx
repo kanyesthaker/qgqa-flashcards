@@ -107,18 +107,20 @@ const FlashcardButtonContainer = styled.div`
   }
 `;
 
-const ProgressContainer = styled.div`
-  border-radius: 6px;
-  border-width: 1px;
+// const ProgressContainer = styled.div`
+//   border-radius: 6px;
+//   border-width: 1px;
 
-  text-align: left;
-  box-shadow: 0 7px 50px rgb(46 10 99 / 5%), 0 1px 1px 0.6px rgb(46 10 99 / 10%);
+//   text-align: left;
+//   box-shadow: 0 7px 50px rgb(46 10 99 / 5%), 0 1px 1px 0.6px rgb(46 10 99 / 10%);
+//   padding-left: 20px;
+//   padding-right: 20px;
+//   padding-top: 5px;
 
-  background-color: white;
-  padding: 4%;
-  // margin-left: auto;
-  // margin-right: auto;
-`;
+//   background-color: white;
+//   // margin-left: auto;
+//   // margin-right: auto;
+// `;
 
 function FlashcardButton(props) {
   if (props.onForgot == "") {
@@ -186,12 +188,13 @@ function Flashcard(props) {
   return (
     <Fragment>
       {props.question == "" ? (
-        <ProgressContainer>
-          <div className="Progress-padding"></div>
+        // <ProgressContainer>
+        <React.Fragment>
           <MyProgressBar />
-          <div className="Progress-text"> Loading Model </div>
-        </ProgressContainer>
+        </React.Fragment>
       ) : (
+        //   <div className="Progress-text"> Loading Model </div>
+        // </ProgressContainer>
         <div className="Flashcard-container">
           <div className="Flashcard-question">
             {props.question || <Skeleton></Skeleton>}{" "}
