@@ -105,6 +105,8 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     // console.log("onActivated fired");
     // console.log("tab id in get all chunks");
     // console.log(tab_id);
+    console.log("this is tab-ID in onActivated");
+    console.log(tab_id);
     chrome.scripting.executeScript(
       {
         target: { tabId: tab_id },
@@ -134,7 +136,18 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
       }
     );
   }
+  async function getCurrentTabId() {
+    let queryOptions = { active: true, currentWindow: true };
+    let tabs = await chrome.tabs.query(queryOptions);
+    return tabs[0].id;
+  }
+
   var tab_id = activeInfo.tabId;
+  // var tab_id = getCurrentTabId();
+  // console.log("tab onActivated");
+  // console.log(tab_id);
+  console.log("this is tab_id in onActivated");
+  console.log(tab_id);
   handleInit(tab_id);
 });
 
@@ -181,8 +194,11 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
     );
   }
 
-  var tab_id = tabID;
-  if (changeInfo.status === "complete" && changeInfo.title) {
+  if (changeInfo.status === "complete" && /^http/.test(tab.url)) {
+    //query to get the current tab
+    var tab_id = tabID;
+    console.log("this is tab_id");
+    console.log(tab_id);
     handleInit(tab_id);
   }
 });

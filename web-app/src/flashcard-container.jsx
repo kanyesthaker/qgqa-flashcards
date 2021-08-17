@@ -249,28 +249,9 @@ function FlashcardContainer(props) {
       var ifRender = true;
       errorOccured ? setErrorOccured(true) : fetchBatchQGQAObjects(ifRender);
       //Now, clean up and reset errorOccured to false
-      await saveObjectInLocalStorage({ errorOccured: false });
+      // await saveObjectInLocalStorage({ errorOccured: false });
     }
     init_states();
-
-    // await saveObjectInLocalStorage({ errorOccured: false });
-    //   await saveObjectInLocalStorage({ idx: 0 });
-    //   await saveObjectInLocalStorage({ currObjects: [] });
-    //   await saveObjectInLocalStorage({ forgotChunks: [] });
-    //   await saveObjectInLocalStorage({ ifCleanUp: false });
-    //   await saveObjectInLocalStorage({ allChunks: [] });
-    // }
-    // init_states();
-
-    //need to use traditional methods here
-    // chrome.storage.local.get(["errorOccured"], function (error_occured_result) {
-    //   var errorOccured = error_occured_result.errorOccured;
-    //   console.log("this is error in useEffect init");
-    //   console.log(errorOccured);
-    //   var ifRender = true;
-    //   errorOccured ? setErrorOccured(true) : fetchBatchQGQAObjects(ifRender);
-    //   //Finally, set the function
-    // });
   }, []);
 
   /**handleEventRemember():

@@ -12,6 +12,8 @@ import Reload from "../icons/reload-sharp.svg";
 import styled, { css } from "styled-components";
 import Skeleton from "react-loading-skeleton";
 import axios from "axios";
+import MyProgressBar from "./progress-bar";
+// import ProgressBar from "react-bootstrap/ProgressBar";
 
 /**
  * Given a question, displays a flashcard
@@ -105,6 +107,19 @@ const FlashcardButtonContainer = styled.div`
   }
 `;
 
+const ProgressContainer = styled.div`
+  border-radius: 6px;
+  border-width: 1px;
+
+  text-align: left;
+  box-shadow: 0 7px 50px rgb(46 10 99 / 5%), 0 1px 1px 0.6px rgb(46 10 99 / 10%);
+
+  background-color: white;
+  padding: 4%;
+  // margin-left: auto;
+  // margin-right: auto;
+`;
+
 function FlashcardButton(props) {
   if (props.onForgot == "") {
     var onPress = props.onRemembered;
@@ -134,8 +149,10 @@ function Flashcard(props) {
   const [absolute2, setAbsolute2] = useState("absolute");
   const [display1, setDisplay1] = useState("");
   const [display2, setDisplay2] = useState("none");
-
   const [ifReported, setIfReported] = useState(false);
+  //test #
+  // const [percentage, setPercentage] = useState(0);
+
   // const [key, setKey] = useState(0);'
   console.log("num renders before onClick");
   console.count("render");
@@ -167,81 +184,90 @@ function Flashcard(props) {
   }
 
   return (
-    <div className="Flashcard-container">
-      <div className="Flashcard-question">
-        {props.question || <Skeleton />}{" "}
-      </div>
+    <Fragment>
+      {props.question == "" ? (
+        <ProgressContainer>
+          <div className="Progress-padding"></div>
+          <MyProgressBar />
+          <div className="Progress-text"> Loading Model </div>
+        </ProgressContainer>
+      ) : (
+        <div className="Flashcard-container">
+          <div className="Flashcard-question">
+            {props.question || <Skeleton></Skeleton>}{" "}
+          </div>
+          <FlashcardAnswerHidden
+            onClick={() => {
+              setOpacity1(0);
+              setOpacity2(1);
+              setAbsolute1("absolute");
+              setAbsolute2("");
+              setDisplay1("none");
+              setDisplay2("");
+            }}
+            opacity={opacity1}
+            position={absolute1}
+            display={display1}
+          >
+            <div className="Flashcard-answer-hidden-text">
+              Click anywhere to reveal
+            </div>
+          </FlashcardAnswerHidden>
 
-      <FlashcardAnswerHidden
-        onClick={() => {
-          setOpacity1(0);
-          setOpacity2(1);
-          setAbsolute1("absolute");
-          setAbsolute2("");
-          setDisplay1("none");
-          setDisplay2("");
-        }}
-        opacity={opacity1}
-        position={absolute1}
-        display={display1}
-      >
-        <div className="Flashcard-answer-hidden-text">
-          Click anywhere to reveal
+          <FlashcardAnswerContainer opacity={opacity2} absolute={absolute2}>
+            <FlashcardAnswer opacity={opacity2} absolute={absolute2}>
+              {props.answer || <Skeleton />}
+            </FlashcardAnswer>
+            {!ifReported && (
+              <ReportAnswer onClick={handleReportAnswer}>
+                {props.reportAnswer || <Skeleton />}
+              </ReportAnswer>
+            )}
+            {ifReported && (
+              <ReportedAnswer>
+                {/* {props.reportAnswer || <Skeleton />} */}
+                Thank you for your feedback
+              </ReportedAnswer>
+            )}
+          </FlashcardAnswerContainer>
+
+          <FlashcardButtonsContainer
+            opacity={opacity2}
+            absolute={opacity2}
+            display={display2}
+          >
+            {props.dummyProp ? (
+              <FlashcardButton
+                text={"Forgot"}
+                color="#774F00"
+                bgColor="white"
+                onHoverBg="#FFE0A5"
+                icon={Reload}
+                onRemembered={""}
+                onForgot={props.onForgot}
+                dummyProp={props.dummyProp}
+              ></FlashcardButton>
+            ) : (
+              <div></div>
+            )}
+            {props.dummyProp ? (
+              <FlashcardButton
+                text={"Remembered"}
+                color="#774F00"
+                bgColor="#FFD37D"
+                onHoverBg="#FFE0A5"
+                icon={Check}
+                onRemembered={props.onRemembered}
+                onForgot={""}
+                dummyProp={props.dummyProp}
+              ></FlashcardButton>
+            ) : (
+              <div></div>
+            )}
+          </FlashcardButtonsContainer>
         </div>
-      </FlashcardAnswerHidden>
-
-      <FlashcardAnswerContainer opacity={opacity2} absolute={absolute2}>
-        <FlashcardAnswer opacity={opacity2} absolute={absolute2}>
-          {props.answer || <Skeleton />}
-        </FlashcardAnswer>
-        {!ifReported && (
-          <ReportAnswer onClick={handleReportAnswer}>
-            {props.reportAnswer || <Skeleton />}
-          </ReportAnswer>
-        )}
-        {ifReported && (
-          <ReportedAnswer>
-            {/* {props.reportAnswer || <Skeleton />} */}
-            Thank you for your feedback
-          </ReportedAnswer>
-        )}
-      </FlashcardAnswerContainer>
-
-      <FlashcardButtonsContainer
-        opacity={opacity2}
-        absolute={opacity2}
-        display={display2}
-      >
-        {props.dummyProp ? (
-          <FlashcardButton
-            text={"Forgot"}
-            color="#774F00"
-            bgColor="white"
-            onHoverBg="#FFE0A5"
-            icon={Reload}
-            onRemembered={""}
-            onForgot={props.onForgot}
-            dummyProp={props.dummyProp}
-          ></FlashcardButton>
-        ) : (
-          <div></div>
-        )}
-        {props.dummyProp ? (
-          <FlashcardButton
-            text={"Remembered"}
-            color="#774F00"
-            bgColor="#FFD37D"
-            onHoverBg="#FFE0A5"
-            icon={Check}
-            onRemembered={props.onRemembered}
-            onForgot={""}
-            dummyProp={props.dummyProp}
-          ></FlashcardButton>
-        ) : (
-          <div></div>
-        )}
-      </FlashcardButtonsContainer>
-    </div>
+      )}
+    </Fragment>
   );
 }
 
