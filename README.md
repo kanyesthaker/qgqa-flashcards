@@ -4,6 +4,9 @@ Ferret is a Chrome extension that uses NLP to generate and ask helpful recall-ba
 
 [Here's a link to our Chrome Extension to install](https://chrome.google.com/webstore/detail/ferret/mjnmolplinickaigofdpejfgfoehnlbh/)
 
+[And here's a link to our blog post introducing Ferret and describing some of the technical decisions made in the project.](https://www.notion.so/samgorman/Ferret-c7508ec65df841859d1f84e518fcf21d)
+
+
 ![Demo of our product](https://github.com/kanyesthaker/qgqa-flashcards/blob/main/demo.gif)
 
 ## Motivation
