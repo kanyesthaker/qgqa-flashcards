@@ -21,6 +21,8 @@ Ferret is in alpha-release right now, which means that you'll encounter bugs and
 
 ## Install the Extension
 
+If you'd just like to use Ferret, [install on the Chrome webstore here](https://chrome.google.com/webstore/detail/ferret/mjnmolplinickaigofdpejfgfoehnlbh/). If you'd like to contribute or explore the codebase, read on. 
+
 To install Ferret, you'll need to have Node.js and npm installed. To check if you have npm, type `npm -v` into your terminal (it should print out a version number). If this doesn't work, use `brew install node` and it should install the required tools.
 
 1. Clone this repo using `git clone git@github.com:kanyesthaker/qgqa-flashcards.git`
