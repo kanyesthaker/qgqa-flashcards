@@ -3,20 +3,14 @@
 }
 
 .progress {
-  /* margin-top: 20px;
-  margin-bottom: 20px; */
   height: 36px;
 }
 
 .Progress-text {
-  /* width: 50%; */
   font-size: 12px;
   color: #6f6f6f;
   font-family: Chart;
   padding-top: 6px;
-
-  /* padding-top: 4%;
-    padding-bottom: 4%; */
 }
 
 .Model-container {

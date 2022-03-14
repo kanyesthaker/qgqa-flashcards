@@ -7,10 +7,6 @@ import React, {
   Fragment,
 } from "react";
 import ProgressBar from "react-bootstrap/ProgressBar";
-import Container from "react-bootstrap/Container";
-import Col from "react-bootstrap/Col";
-import Row from "react-bootstrap/Row";
-
 import "./progress-bar.css";
 import styled, { css } from "styled-components";
 import Lottie, { useLottie } from "lottie-react";
@@ -24,8 +20,6 @@ const ProgressContainer = styled.div`
   box-shadow: 0 7px 50px rgb(46 10 99 / 5%), 0 1px 1px 0.6px rgb(46 10 99 / 10%);
 
   background-color: white;
-  // margin-left: auto;
-  // margin-right: auto;
 `;
 
 const style = {
@@ -48,25 +42,22 @@ function MyProgressBar(props) {
     () => {
       let timer = 0;
       if (percentage <= 90) {
+        const easingFactor = Math.random() * 5 + 7;
         timer = setTimeout(
-          () =>
-            //Clean this up
-            setPercentage((p) => p + Math.floor(Math.random() * (12 - 7) + 7)),
+          () => setPercentage((p) => p + Math.floor(easingFactor)),
           1000
         );
       }
-      // this will clear Timeout
-      // when component unmount like in willComponentUnmount
-      // and show will not change to true
+      // Clears Timeout when component unmounts
       return () => {
         clearTimeout(timer);
       };
     },
-    // useEffect will run only one time with empty []
-    // if you pass a value to array,
-    // like this - [data]
-    // than clearTimeout will run every time
-    // this value changes (useEffect re-run)
+    /**  
+     useEffect will run only one time with empty []
+     Otherwise with value, clearTimeout will run every time
+     this value changes (useEffect re-run)
+    */
     [percentage]
   );
 

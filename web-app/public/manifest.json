@@ -6,7 +6,7 @@
 
   "name": "Ferret",
   "description": "AI-flashcards that help you learn whatever you'd like, wherever you go on the internet. ",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "commands": {
     "_execute_action": {
       "suggested_key": "Ctrl+Shift+Y",

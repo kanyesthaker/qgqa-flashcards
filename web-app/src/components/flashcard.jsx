@@ -1,9 +1,5 @@
 import React, {
-  Component,
   useState,
-  useEffect,
-  useReducer,
-  useCallback,
   Fragment,
 } from "react";
 import "./flashcard.css";
@@ -13,7 +9,6 @@ import styled, { css } from "styled-components";
 import Skeleton from "react-loading-skeleton";
 import axios from "axios";
 import MyProgressBar from "./progress-bar";
-// import ProgressBar from "react-bootstrap/ProgressBar";
 
 /**
  * Given a question, displays a flashcard
@@ -138,13 +133,9 @@ function Flashcard(props) {
   const [display2, setDisplay2] = useState("none");
   const [ifReported, setIfReported] = useState(false);
 
-  // console.log("num renders before onClick");
-  // console.count("render");
-
   function handleReportAnswer() {
     setIfReported(true);
-    // console.log("num renders after onClick");
-    // console.count("render");
+
     var ENDPOINT_STRING =
       "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/record-feedback";
     //Post this data

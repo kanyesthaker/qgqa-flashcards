@@ -26,11 +26,11 @@ import {
  * 5. Determines whether to render a flashcard, error message, or message when all flashcards are exhausted
  * 
  * LOCAL STORAGE OBJECTS
- * @param forgotChunks - internal queue of current all forgotCunks
- * @param currObjects - internal queue of current chunks received by the model and not yet rendered
- * @param allChunks - parsed and preprocessed array of chunks 
- * @param idx - int idx counter used to slice into allChunks to get the next batch of 4 objects.
- * @param errorOccured - bool set in background.js if error occured
+ * @param {object}forgotChunks - internal queue of current all forgotCunks
+ * @param {object} currObjects - internal queue of current chunks received by the model and not yet rendered
+ * @param {object} allChunks - parsed and preprocessed array of chunks 
+ * @param {int} idx - int idx counter used to slice into allChunks to get the next batch of 4 objects.
+ * @param {bool} errorOccured - bool set in background.js if error occured
  *
  * PARAMS PASSED TO FLASHCARDS
  * @param key
@@ -101,8 +101,6 @@ function FlashcardContainer(props) {
     console.log(data);
 
     var currChunk = data.shift();
-    //if idx has not reached the end?
-
     if (currChunk != null) {
       //If we set our forgot flag, then append this chunk to the end of the queue
       if (forgotObject == true) {
@@ -116,7 +114,6 @@ function FlashcardContainer(props) {
       await saveObjectInLocalStorage({ storedCurrChunk: currChunk });
       //Update currChunk so that we can highlight, this triggers our opportunity to highlight
       renderFlashcard(currChunk);
-      //Decide to fetch more or not
       var size = idx + BATCH_SIZE; //ex) we're in idx 8 + 4 =12, there are 13 elements in allchunks, no more requests
       if (size <= allChunks.length) {
         var ifRender = false;
@@ -128,10 +125,8 @@ function FlashcardContainer(props) {
       renderFlashcard(forgottenChunk);
     } else if (idx + BATCH_SIZE > allChunks.length && isLoading === false) {
       setisMoreFlashcards(false);
-      //Set handler to clean up flashcards
     }
 
-    // }
   }
 
   /**readResponse():
@@ -187,7 +182,7 @@ function FlashcardContainer(props) {
     }
   }
 
-  /**renderBatchHandler():
+  /**fetchBatchQGQAObjects():
    * Helper function that calls onClick of when the "Remember"
    * @param ifRender bool flag passed in to determine if function should call renderBatchHandler
    * Passed true on init, otherwise false
@@ -211,7 +206,6 @@ function FlashcardContainer(props) {
     var currChunk2 = batchChunks[1];
     var currChunk3 = batchChunks[2];
     var currChunk4 = batchChunks[3];
-    //Update our IDX
 
     const ENDPOINT_STRING =
       "https://cbczedlkid.execute-api.us-west-2.amazonaws.com/ferret-alpha/generate-single ";
@@ -248,8 +242,6 @@ function FlashcardContainer(props) {
       console.log(errorOccured);
       var ifRender = true;
       errorOccured ? setErrorOccured(true) : fetchBatchQGQAObjects(ifRender);
-      //Now, clean up and reset errorOccured to false
-      // await saveObjectInLocalStorage({ errorOccured: false });
     }
     init_states();
   }, []);

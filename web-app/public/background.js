@@ -7,10 +7,8 @@ const getObjectFromLocalStorage = async function (key) {
         resolve(value[key]);
       });
     } catch (ex) {
-      // chrome.storage.local.set({ errorOccured: true }, function () {
       reject(ex);
-      // });
-      // reject(ex);
+   
     }
   });
 };
@@ -102,11 +100,9 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     await saveObjectInLocalStorage({ ifCleanUp: false });
     await saveObjectInLocalStorage({ allChunks: [] });
 
-    // console.log("onActivated fired");
-    // console.log("tab id in get all chunks");
-    // console.log(tab_id);
     console.log("this is tab-ID in onActivated");
     console.log(tab_id);
+
     chrome.scripting.executeScript(
       {
         target: { tabId: tab_id },
@@ -143,9 +139,6 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
   }
 
   var tab_id = activeInfo.tabId;
-  // var tab_id = getCurrentTabId();
-  // console.log("tab onActivated");
-  // console.log(tab_id);
   console.log("this is tab_id in onActivated");
   console.log(tab_id);
   handleInit(tab_id);
@@ -158,7 +151,6 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
     await saveObjectInLocalStorage({ idx: 0 });
     await saveObjectInLocalStorage({ currObjects: [] });
     await saveObjectInLocalStorage({ forgotChunks: [] });
-    //Be sure that I need this
     await saveObjectInLocalStorage({ ifCleanUp: false });
     await saveObjectInLocalStorage({ allChunks: [] });
 
@@ -269,8 +261,6 @@ function cleanHighlightText() {
   const divs = [...document.querySelectorAll("p")];
   for (var i = 0; i < divs.length - 1; ++i) {
     divs[i].style["background-color"] = "transparent";
-    // var text_in_div = divs[i].innerText;
-    // console.log(text_in_div);
   }
 }
 

@@ -1,6 +1,5 @@
 //ESSENTIAL: Let ESLint know that we are accessing Chrome browser methods
 /* global chrome */
-
 //This code heavily inspired by https://gist.github.com/sumitpore/47439fcd86696a71bf083ede8bbd5466
 
 /**
