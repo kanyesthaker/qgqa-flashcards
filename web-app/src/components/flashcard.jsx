@@ -113,8 +113,6 @@ function FlashcardButton(props) {
       onClick={onPress}
       bgColor={props.bgColor}
       onHoverBg={props.onHoverBg}
-      // onMouseEnter={mouseEnter}
-      // onMouseLeave={mouseOut}
     >
       <img className="Flashcard-button-icon" src={props.icon}></img>
       <div className="Flashcard-button-text" style={{ color: props.color }}>

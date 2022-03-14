@@ -1,5 +1,11 @@
 /* global chrome */
 
+/**
+ * background.js contains background worker event listeners and content scripts
+ * that run in an isolated browser environment and may communicate with the client
+ * Extension with use of the Chrome APIs declared in the manifest.json.
+ */
+
 const getObjectFromLocalStorage = async function (key) {
   return new Promise((resolve, reject) => {
     try {
@@ -8,7 +14,6 @@ const getObjectFromLocalStorage = async function (key) {
       });
     } catch (ex) {
       reject(ex);
-   
     }
   });
 };
@@ -51,6 +56,12 @@ chrome.commands.onCommand.addListener((command) => {
   console.log(`Command: ${command}`);
 });
 
+/**
+ * getAllChunks is function that parses the DOM tree of the current HTML page.
+ * It parses this DOM tree to retrieve <p> tag elements, then construct chunks
+ * from each 3 <p> tags.
+ * @returns array of processed chunks to be fed to the model
+ */
 function getAllChunks() {
   const divs = [...document.querySelectorAll("p")];
 
@@ -83,14 +94,16 @@ function getAllChunks() {
   var arr_of_answer_chunks = [];
   for (var j = 0; j < arr_of_divs.length - 2; ++j) {
     var chunks = [arr_of_divs[j], arr_of_divs[j + 1], arr_of_divs[j + 2]];
-    // var chunks = [arr_of_divs[i], arr_of_divs[i + 1]]; //Batches of 2 may increase performance
     var answerChunk = chunks.join(" ");
     arr_of_answer_chunks.push(answerChunk);
   }
   return arr_of_answer_chunks;
 }
 
-//Listener function to get all chunks upon user navigating to new tab
+/**
+ * Chrome event listener to get all chunks upon user navigating to new tab.
+ * This listener executes a content script to retrieve all text chunks with getAllChunks().
+ */
 chrome.tabs.onActivated.addListener(function (activeInfo) {
   async function handleInit(tab_id) {
     await saveObjectInLocalStorage({ errorOccured: false });
@@ -99,9 +112,6 @@ chrome.tabs.onActivated.addListener(function (activeInfo) {
     await saveObjectInLocalStorage({ forgotChunks: [] });
     await saveObjectInLocalStorage({ ifCleanUp: false });
     await saveObjectInLocalStorage({ allChunks: [] });
-
-    console.log("this is tab-ID in onActivated");
-    console.log(tab_id);
 
     chrome.scripting.executeScript(
       {
@@ -173,7 +183,6 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
             function (results) {}
           );
         } catch (exception) {
-          //set some error state to be false
           console.log("this is error in onUpdated");
           console.log(exception);
 
@@ -195,11 +204,15 @@ chrome.tabs.onUpdated.addListener(function (tabID, changeInfo, tab) {
   }
 });
 
+/**
+ *  highlightText is a function that injects a highlighter background-color
+ *  into the DOM tree of the given HTML page.  The text highlighted is
+ * the chunk stored in Chrome local storage under storedCurrChunk.
+ */
 async function highlightText() {
   function truncate(str, nu_words) {
     return str.split(" ").splice(0, nu_words).join(" ");
   }
-  // Get all p tags
   const divs = [...document.querySelectorAll("p")];
 
   //make a request to get the current value in storage
@@ -212,14 +225,12 @@ async function highlightText() {
     //Context is offset by 1, so we truncate first character as workaround
     var match_string = truncated_context.substring(1);
     for (var i = 0; i < divs.length - 1; ++i) {
-      //Check if this div has the text content I want
       var text_in_div = divs[i].innerText;
 
       if (text_in_div != null && text_in_div.includes(match_string)) {
         console.log("Conditional ran");
         //If we're not at the first div, then remove the last two highlighting
         if (i > 2) {
-          //This is hacky for now
           divs[0].style["background-color"] = "transparent";
           divs[1].style["background-color"] = "transparent";
           divs[i - 1].style["background-color"] = "transparent";
@@ -256,6 +267,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
   }
 });
 
+/**
+ * cleanHighlightText is a simple function that removes any background colors
+ * injected into divs in the DOM tree by highlightText().
+ */
 function cleanHighlightText() {
   // Get all p tags
   const divs = [...document.querySelectorAll("p")];
@@ -264,13 +279,16 @@ function cleanHighlightText() {
   }
 }
 
+/**
+ * Chrome event listener that listens for whether the ifCleanUp boolean flag
+ * is set to true, and if so, then runs the content script cleanHighlightText().
+ */
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === "local" && changes.ifCleanUp?.newValue) {
     //inject the script
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       var tab_id = tabs[0].id;
 
-      //Execute the script
       chrome.scripting.executeScript(
         {
           target: { tabId: tab_id },
